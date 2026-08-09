@@ -46,40 +46,40 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundWhite)
+            .background(Brush.verticalGradient(listOf(Color(0xFFF8F9FA), Color(0xFFF0F2F5))))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Top bar
             HomeTopBar(
                 cartItemCount = cartItemCount,
                 onCartClick = onCartClick
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Greeting
+            // Greeting Section
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text(
-                    text = "Order Manually",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = TextPrimary
+                    text = "Freshly Baked",
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Black,
+                    color = TextPrimary,
+                    letterSpacing = (-1).sp
                 )
                 Text(
-                    text = "Choose your perfect pizza",
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = "Artisan pizzas delivered to your door",
+                    style = MaterialTheme.typography.bodyLarge,
                     color = TextSecondary,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // Featured pizza
+            // Featured Pizza Section (3D Hero)
             if (uiState.featuredPizzas.isNotEmpty()) {
                 FeaturedPizzaSection(
                     pizzas = uiState.featuredPizzas,
@@ -89,7 +89,7 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             // Popular section
             Row(
@@ -97,19 +97,23 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Bottom
             ) {
-                SectionTitle(title = "Popular Picks")
-                TextButton(onClick = {}) {
-                    Text("See All", color = OrangeAccent, fontWeight = FontWeight.SemiBold)
-                }
+                SectionTitle(title = "Popular Right Now")
+                Text(
+                    text = "See All",
+                    color = OrangeAccent,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    modifier = Modifier.clickable { }
+                )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 itemsIndexed(uiState.featuredPizzas) { _, pizza ->
                     PizzaCard(
@@ -119,7 +123,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(120.dp))
         }
     }
 }
@@ -133,21 +137,23 @@ private fun HomeTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
             Text(
-                text = "Good Evening! 👋",
-                style = MaterialTheme.typography.labelMedium,
-                color = TextSecondary
+                text = "Welcome to",
+                style = MaterialTheme.typography.labelLarge,
+                color = TextSecondary,
+                fontWeight = FontWeight.Medium
             )
             Text(
                 text = "PiePoint",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = OrangeAccent
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Black,
+                color = OrangeAccent,
+                letterSpacing = (-1).sp
             )
         }
         CartBadge(
@@ -165,45 +171,67 @@ private fun FeaturedPizzaSection(
     onIndexChanged: (Int) -> Unit
 ) {
     val featured = pizzas[featuredIndex]
-    val infiniteTransition = rememberInfiniteTransition(label = "float")
+    
+    // Idle animation for 3D float
+    val infiniteTransition = rememberInfiniteTransition(label = "hero_float")
     val floatOffset by infiniteTransition.animateFloat(
-        initialValue = -6f,
-        targetValue = 6f,
+        initialValue = -10f,
+        targetValue = 10f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = FastOutSlowInEasing),
+            animation = tween(2500, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "float_anim"
+        label = "y_offset"
+    )
+    
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = -2f,
+        targetValue = 2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "z_rotation"
     )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(Color(0xFFFFF3EE), Color(0xFFFFE8DC))
-                )
-            )
-            .clickable { onPizzaClick(featured.id) }
-            .padding(20.dp)
+            .height(220.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Featured",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = OrangeAccent,
-                    fontWeight = FontWeight.SemiBold
+        // Main Card (Sleek Gradient)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .shadow(16.dp, RoundedCornerShape(32.dp), spotColor = Color.Black.copy(alpha = 0.1f))
+                .clip(RoundedCornerShape(32.dp))
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFFFFE8DC), Color(0xFFFFF3EE), Color.White)
+                    )
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                .clickable { onPizzaClick(featured.id) }
+                .padding(24.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxWidth(0.55f)) {
+                Surface(
+                    color = OrangeAccent.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "CHEF'S CHOICE",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OrangeAccent,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = featured.name,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold,
                     color = TextPrimary,
                     maxLines = 2,
@@ -211,97 +239,94 @@ private fun FeaturedPizzaSection(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = featured.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    text = "$${featured.basePrice}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Black,
+                    color = OrangeAccent
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "$${String.format("%.2f", featured.basePrice)}",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = OrangeAccent
-                    )
+                
+                Spacer(modifier = Modifier.weight(1f))
+                
+                // Indicators
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    pizzas.forEachIndexed { index, _ ->
+                        val width by animateDpAsState(if (index == featuredIndex) 20.dp else 6.dp, label = "dot")
+                        Box(
+                            modifier = Modifier
+                                .size(width, 6.dp)
+                                .clip(CircleShape)
+                                .background(if (index == featuredIndex) OrangeAccent else Color(0xFFDCDCDC))
+                                .clickable { onIndexChanged(index) }
+                        )
+                    }
                 }
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Pizza image floating
-            Box(
-                modifier = Modifier
-                    .size(150.dp)
-                    .graphicsLayer { translationY = floatOffset }
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                androidx.compose.foundation.Image(
-                    painter = painterResource(id = featured.imageRes),
-                    contentDescription = featured.name,
-                    modifier = Modifier
-                        .size(140.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
             }
         }
 
-        // Dot indicators
-        Row(
+        // Pizza "Popping Out" Image
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                .size(200.dp)
+                .align(Alignment.CenterEnd)
+                .offset(x = 20.dp, y = floatOffset.dp)
+                .graphicsLayer {
+                    rotationZ = rotation
+                    cameraDistance = 12f
+                },
+            contentAlignment = Alignment.Center
         ) {
-            pizzas.forEachIndexed { index, _ ->
-                Box(
-                    modifier = Modifier
-                        .size(if (index == featuredIndex) 24.dp else 8.dp, 8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(if (index == featuredIndex) OrangeAccent else Color(0xFFCCCCCC))
-                        .clickable { onIndexChanged(index) }
-                )
-            }
+            // Shadow under pizza
+            Box(
+                modifier = Modifier
+                    .size(160.dp)
+                    .graphicsLayer { 
+                        scaleX = 0.9f 
+                        scaleY = 0.4f
+                        translationY = 80f
+                    }
+                    .shadow(40.dp, CircleShape, spotColor = Color.Black.copy(alpha = 0.8f))
+            )
+            
+            Image(
+                imageRes = featured.imageRes,
+                contentDescription = featured.name,
+                modifier = Modifier
+                    .size(180.dp)
+                    .clip(CircleShape)
+                    .shadow(20.dp, CircleShape)
+            )
         }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(24.dp))
 
-    // Mini pizza thumbnails row
+    // Thumbnails for selection
     LazyRow(
         contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         itemsIndexed(pizzas) { index, pizza ->
             val isSelected = index == featuredIndex
+            val borderAlpha by animateFloatAsState(if (isSelected) 1f else 0f, label = "thumb_border")
+            
             Box(
                 modifier = Modifier
-                    .size(72.dp)
+                    .size(70.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(if (isSelected) OrangeAccent.copy(alpha = 0.15f) else CardBackground)
+                    .background(if (isSelected) OrangeAccent.copy(alpha = 0.05f) else Color.White)
                     .border(
-                        width = if (isSelected) 2.dp else 0.dp,
-                        color = if (isSelected) OrangeAccent else Color.Transparent,
+                        width = 2.dp,
+                        color = OrangeAccent.copy(alpha = borderAlpha),
                         shape = RoundedCornerShape(16.dp)
                     )
                     .clickable { onIndexChanged(index) }
                     .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                androidx.compose.foundation.Image(
-                    painter = painterResource(id = pizza.imageRes),
+                Image(
+                    imageRes = pizza.imageRes,
                     contentDescription = pizza.name,
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
+                    modifier = Modifier.size(50.dp).clip(CircleShape)
                 )
             }
         }

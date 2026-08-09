@@ -1,5 +1,6 @@
 package com.piepoint.app.ui.theme
 
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 // Brand Colors
@@ -12,6 +13,16 @@ val YellowAccent = Color(0xFFFFC107)
 val BackgroundWhite = Color(0xFFFAFAFA)
 val SurfaceWhite = Color(0xFFFFFFFF)
 val CardBackground = Color(0xFFF5F5F5)
+
+// Glassmorphism Colors
+val GlassWhite = Color(0x66FFFFFF)
+val GlassWhiteBorder = Color(0x33FFFFFF)
+val GlassDark = Color(0x1A000000)
+
+// Gradients
+val PremiumGradient = Brush.horizontalGradient(listOf(OrangeAccent, Color(0xFFFF8C5E)))
+val SurfaceGradient = Brush.verticalGradient(listOf(SurfaceWhite, Color(0xFFFDFDFD)))
+val GlassGradient = Brush.linearGradient(listOf(Color.White.copy(alpha = 0.3f), Color.White.copy(alpha = 0.1f)))
 
 // Text Colors
 val TextPrimary = Color(0xFF1A1A2E)

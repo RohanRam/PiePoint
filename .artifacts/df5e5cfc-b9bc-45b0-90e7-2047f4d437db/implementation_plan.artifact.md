@@ -1,48 +1,45 @@
-# Implementation Plan - Realistic Toppings & Detail UI Refinement
+# Implementation Plan - Modern 3D & Sleek UI Overhaul
 
-This plan covers the integration of newly added topping images and three major UI improvements to the Pizza Detail screen: unified size selector layout, 3D ingredient feel, and infinite scrolling topping selector.
+This plan aims to transform the current flat UI into a modern, sleek experience with depth (3D feel), glassmorphism, and fluid animations.
+
+## User Review Required
+
+> [!NOTE]
+> This overhaul will introduce significant visual changes, including gradients, glassmorphic effects, and motion-based 3D depth. The goal is to make the app feel "premium" and modern.
 
 ## Proposed Changes
 
-### [Component: Data Layer]
-#### [MODIFY] [MockDataProvider.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/data/repository/MockDataProvider.kt)
-- Update the `toppings` list to map each `Topping` to its new realistic image resource in `res/drawable`.
-- Mapping:
-    - Cheese -> `R.drawable.cheese`
-    - Pepperoni -> `R.drawable.pepporoni`
-    - Mushroom -> `R.drawable.mushroom`
-    - Olive -> `R.drawable.olive` (or `black_olive`)
-    - Onion -> `R.drawable.onion`
-    - Bell Pepper -> `R.drawable.green_pepper`
-    - Tomato -> `R.drawable.tomato`
-    - Basil -> `R.drawable.basil`
-    - Bacon -> `R.drawable.beacon`
-    - Jalapeño -> `R.drawable.jalapeaneo`
+### [Theme & Visual Language]
+#### [MODIFY] [Color.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/theme/Color.kt)
+- Introduce "Glass" colors: semi-translucent whites and blacks.
+- Define modern gradients (e.g., `SurfaceGradient`, `CardGradient`).
+
+### [Component: Home Screen]
+#### [MODIFY] [HomeScreen.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/screens/HomeScreen.kt)
+- **3D Floating Pizzas**: Enhance the `FeaturedPizzaSection` to use a multi-layered shadow and subtle 3D tilt that responds to interaction.
+- **Glassmorphic Top Bar**: Update `HomeTopBar` to feel like a glass panel floating over the content.
+- **Sleek Section Headers**: Use cleaner typography with letter-spacing and gradients.
 
 ### [Component: Pizza Detail Screen]
 #### [MODIFY] [PizzaDetailScreen.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/screens/PizzaDetailScreen.kt)
-- **Realistic Toppings UI**:
-    - Replace emoji `Text` with `Image` using the `topping.imageRes`.
-    - Apply a soft `shadow` and slight `graphicsLayer` rotation to placed toppings on the pizza to give them a natural, 3D "on-pizza" look.
-- **Unified Size Selector**:
-    - Update `SizeChip` to use `Modifier.weight(1f)` and a consistent `height` to ensure S, M, and L chips have identical proportions.
-- **Infinite Loop Topping Selector**:
-    - Implement infinite scrolling for the topping `LazyRow` by using a large virtual item count and modulo indexing.
+- **Enhanced 3D Hero**:
+    - Add a dynamic shadow "floor" under the pizza.
+    - Implement a "pop-in" entry animation for the pizza and ingredients.
+- **Glassmorphic Size Selector**: Redesign `SizeChip` to use semi-translucent backgrounds with thin, high-contrast borders.
+- **Animated Snap**: Make the drag-and-drop placement feel "heavy" with a bouncy snap animation and a slight zoom effect on the pizza when a topping is hovering.
 
-#### 4. Interactive Drag & Drop Fixes
-- **[MODIFY] [PizzaDetailScreen.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/screens/PizzaDetailScreen.kt)**:
-    - Fix the drop detection logic to accurately map the drag offset to the pizza image area.
-    - **Cool Animations**:
-        - Add a "pop" animation (scale up) when a topping is successfully dropped.
-        - Add a "magnetic" effect where the topping snaps to the pizza surface.
-        - Use `animateOffsetAsState` or similar for smooth placement transitions.
+### [Component: Shared UI]
+#### [MODIFY] [CommonComponents.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/components/CommonComponents.kt)
+- **Modernized PizzaCard**: Add a subtle 3D lift effect on press.
+- **Glassmorphic CartBadge**: Update the badge to use glassmorphism.
+- **Premium GradientButton**: Use multi-layer gradients and a subtle inner glow.
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `gradle_build(":app:assembleDebug")` to ensure all resource IDs are valid and the project compiles.
+- Build project: `gradle_build(":app:assembleDebug")`.
 
 ### Manual Verification
-- **Toppings**: Verify that actual images are displayed instead of emojis in the selector and on the pizza.
-- **Size Selector**: Check that all three size buttons are perfectly aligned and of the same size.
-- **Infinite Scroll**: Scroll through the toppings and ensure the list wraps around seamlessly.
+- **Visual Depth**: Verify that elements appear to exist in 3D space via layering and shadows.
+- **Motion Sleekness**: Ensure animations are fluid, bouncy (spring-based), and not jerky.
+- **Glass Effect**: Check legibility over semi-translucent surfaces.

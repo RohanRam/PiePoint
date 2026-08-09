@@ -1,8 +1,15 @@
-- `[x]` Map realistic images in `MockDataProvider.kt`
-- `[x]` Update `PizzaDetailScreen.kt` for Realistic Toppings
-    - `[x]` Replace emojis with `Image` components
-    - `[x]` Add shadow/rotation for 3D effect on pizza
-- `[x]` Unify `SizeChip` layout dimensions
-- `[x]` Implement Infinite Loop for topping `LazyRow`
-- `[x]` Fix and animate Drag & Drop functionality
-- `[x]` Final build and verification
+- `[x]` Modernize Theme and Colors
+    - `[x]` Add Glass and Gradient colors to `Color.kt`
+- `[x]` Update Shared Components in `CommonComponents.kt`
+    - `[x]` Glassmorphic `CartBadge`
+    - `[x]` Premium `GradientButton` with inner glow
+    - `[x]` 3D lift effect for `PizzaCard`
+- `[x]` Overhaul Home Screen (`HomeScreen.kt`)
+    - `[x]` Glassmorphic `HomeTopBar`
+    - `[x]` 3D Parallax/Tilt effect for Featured Pizza
+    - `[x]` Sleek typography and layout spacing
+- `[x]` Overhaul Pizza Detail Screen (`PizzaDetailScreen.kt`)
+    - `[x]` Enhanced 3D Hero with shadow floor
+    - `[x]` Glassmorphic `SizeChip`
+    - `[x]` Bouncy magnetic drag-and-drop animations
+- `[x]` Final Verification and Build
