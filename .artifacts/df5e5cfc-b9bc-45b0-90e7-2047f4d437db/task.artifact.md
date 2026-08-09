@@ -1,18 +1,6 @@
-- `[x]` Rename App to PiePoint
-    - `[x]` Update `strings.xml`
-    - `[x]` Update `settings.gradle.kts`
-- `[x]` Refactor Package and Namespaces
-    - `[x]` Update `app/build.gradle.kts` (applicationId and namespace)
-    - `[x]` Rename package in all source files (`com.pizzaorder.app` -> `com.piepoint.app`)
-    - `[x]` Rename directory structure to match new package
-- `[x]` Rename Theme and Main App Composables
-    - `[x]` `PizzaOrderTheme` -> `PiePointTheme`
-    - `[x]` `PizzaOrderApp` -> `PiePointApp`
-    - `[x]` Update `AndroidManifest.xml`
-- `[x]` Update Data and UI
-    - `[x]` Remove non-pizza categories in `MockDataProvider.kt`
-    - `[x]` Hide Category Selector in `HomeScreen.kt`
-    - `[x]` Update brand text in `HomeScreen.kt`
-- `[x]` Verification
-    - `[x]` Gradle Sync
-    - `[x]` Build Project
+- `[x]` Remove XL size from `PizzaSize` enum in `Models.kt`
+- `[x]` Implement pizza scaling animation in `PizzaDetailScreen.kt`
+    - `[x]` Define scale factors for S, M, L
+    - `[x]` Add `animateFloatAsState` with spring spec
+    - `[x]` Apply scale to the Hero pizza image
+- `[x]` Verify changes with build and manual check

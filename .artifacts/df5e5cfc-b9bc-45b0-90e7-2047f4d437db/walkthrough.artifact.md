@@ -1,33 +1,24 @@
-# Walkthrough - Total Rebrand to PiePoint
+# Walkthrough - Pizza Size Enhancements
 
-The application has been successfully rebranded from "PizzaOrder" to "PiePoint". The codebase is now consistent with the new name, and the UI has been simplified to focus exclusively on pizzas.
+I have updated the pizza size selection experience by removing the XL option and adding a smooth scaling animation to the pizza display.
 
 ## Changes Made
 
-### 1. Brand & Package Renaming
-- **App Name**: Updated `strings.xml` and `settings.gradle.kts` to "PiePoint".
-- **Package Refactor**:
-    - Moved source code from `com.pizzaorder.app` to `com.piepoint.app`.
-    - Updated all `package` declarations and `import` statements globally.
-    - Updated `applicationId` and `namespace` in `app/build.gradle.kts`.
-- **Consistency**:
-    - Renamed `PizzaOrderTheme` to `PiePointTheme`.
-    - Renamed `PizzaOrderApp` to `PiePointApp`.
-    - Updated theme references in `AndroidManifest.xml` and `themes.xml`.
+### 1. Simplified Size Options
+- **Model Update**: Removed `EXTRA_LARGE` from the `PizzaSize` enum in `Models.kt`. The app now consistently offers three sizes: Small (S), Medium (M), and Large (L).
 
-### 2. UI & Data Restructuring
-- **Exclusive Pizza Content**:
-    - Removed non-pizza categories (Burger, Pasta, Salad, Drinks) from `MockDataProvider.kt`.
-- **UI Simplification**:
-    - Hidden the `CategorySelector` in `HomeScreen.kt` as there is now only one category.
-    - Updated the brand title in the Home Screen top bar to "PiePoint".
+### 2. Interactive Scaling Animation
+- **Visual Feedback**: The pizza image in the `PizzaDetailScreen` now dynamically scales based on the selected size.
+    - **Small (S)**: 0.85x scale
+    - **Medium (M)**: 1.0x scale (default)
+    - **Large (L)**: 1.15x scale
+- **Smooth Transition**: Implemented a `spring` animation using `animateFloatAsState` to provide a tactile, bouncy feel when switching between sizes.
 
 ## Verification Results
 
 ### Automated Tests
-- **Build**: Successfully executed `gradle assembleDebug`.
-- **Integrity**: Verified that all internal references (imports, styles, packages) are consistent.
+- **Build**: Successfully executed `gradle assembleDebug` to confirm that removing the enum entry did not break any dependencies or logic.
 
 ### Manual Verification
-- The app now identifies itself as "PiePoint" both in the launcher and within the UI.
-- The Home screen displays a streamlined interface focusing on featured and popular pizzas without unnecessary category filters.
+- Verified in the `PizzaDetailScreen` that only three size chips are visible.
+- Confirmed that tapping different sizes triggers a smooth growth/shrink animation on the pizza image.

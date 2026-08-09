@@ -34,8 +34,7 @@ data class CartItem(
 enum class PizzaSize(val label: String, val priceModifier: Double, val inches: Int) {
     SMALL("S", 0.0, 8),
     MEDIUM("M", 2.5, 10),
-    LARGE("L", 5.0, 12),
-    EXTRA_LARGE("XL", 8.0, 14)
+    LARGE("L", 5.0, 12)
 }
 
 data class Order(

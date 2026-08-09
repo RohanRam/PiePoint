@@ -70,6 +70,19 @@ fun PizzaDetailScreen(
         label = "rotation_anim"
     )
 
+    val pizzaScale by animateFloatAsState(
+        targetValue = when (uiState.selectedSize) {
+            PizzaSize.SMALL -> 0.85f
+            PizzaSize.MEDIUM -> 1.0f
+            PizzaSize.LARGE -> 1.15f
+        },
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "pizza_size_scale"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -140,6 +153,8 @@ fun PizzaDetailScreen(
                         .graphicsLayer {
                             translationY = floatOffset
                             rotationZ = rotation
+                            scaleX = pizzaScale
+                            scaleY = pizzaScale
                         }
                         .shadow(elevation = 16.dp, shape = CircleShape),
                     contentScale = ContentScale.Crop
