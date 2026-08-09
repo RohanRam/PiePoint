@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.pizzaorder.app"
+    namespace = "com.piepoint.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.pizzaorder.app"
+        applicationId = "com.piepoint.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

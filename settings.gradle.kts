@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PizzaOrder"
+rootProject.name = "PiePoint"
 include(":app")
