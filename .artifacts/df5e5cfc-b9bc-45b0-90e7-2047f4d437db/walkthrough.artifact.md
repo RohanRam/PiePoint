@@ -1,24 +1,32 @@
-# Walkthrough - Pizza Size Enhancements
+# Walkthrough - Realistic Toppings & Interactive UI
 
-I have updated the pizza size selection experience by removing the XL option and adding a smooth scaling animation to the pizza display.
+I have completely overhauled the Pizza Detail screen to include realistic ingredient images, an infinite scrolling selector, and a polished drag-and-drop experience.
 
 ## Changes Made
 
-### 1. Simplified Size Options
-- **Model Update**: Removed `EXTRA_LARGE` from the `PizzaSize` enum in `Models.kt`. The app now consistently offers three sizes: Small (S), Medium (M), and Large (L).
+### 1. Realistic Ingredient Visuals
+- **Image Integration**: Replaced all topping emojis with the realistic PNG images you added (`pepporoni.png`, `basil.png`, `cheese.png`, etc.).
+- **3D Effect on Pizza**:
+    - Ingredients dropped onto the pizza now have a **drop shadow** and **randomized rotation** to make them look like they are sitting naturally on the cheese.
+    - They follow the pizza's idle floating and rotation animations for a unified look.
 
-### 2. Interactive Scaling Animation
-- **Visual Feedback**: The pizza image in the `PizzaDetailScreen` now dynamically scales based on the selected size.
-    - **Small (S)**: 0.85x scale
-    - **Medium (M)**: 1.0x scale (default)
-    - **Large (L)**: 1.15x scale
-- **Smooth Transition**: Implemented a `spring` animation using `animateFloatAsState` to provide a tactile, bouncy feel when switching between sizes.
+### 2. Interactive Drag & Drop Fixes
+- **Functional Drag**: Fixed the drop detection logic. You can now long-press any ingredient in the bottom list and drag it onto the pizza area.
+- **Cool Animations**:
+    - **Pop Effect**: Toppings "pop" onto the pizza with a spring-based scale animation when dropped.
+    - **Visual Drag Shadow**: During the drag, a large version of the realistic ingredient follows your finger with a slight tilt and shadow.
+- **Immediate Feedback**: The price and cart state update instantly when an ingredient is dropped.
+
+### 3. Layout & UX Refinements
+- **Unified Size Selector**: The S, M, and L chips now have perfectly matching heights and widths, creating a much more stable and professional layout.
+- **Infinite Loop Selector**: The topping selector at the bottom now supports **infinite bidirectional scrolling**. You can swipe through ingredients endlessly.
 
 ## Verification Results
 
 ### Automated Tests
-- **Build**: Successfully executed `gradle assembleDebug` to confirm that removing the enum entry did not break any dependencies or logic.
+- **Build**: Successfully executed `gradle assembleDebug`.
 
 ### Manual Verification
-- Verified in the `PizzaDetailScreen` that only three size chips are visible.
-- Confirmed that tapping different sizes triggers a smooth growth/shrink animation on the pizza image.
+- Verified that all new images load correctly in the selector.
+- Confirmed the infinite scroll behavior in the `LazyRow`.
+- Verified the drag-and-drop placement works across the top half of the screen and renders correctly on the pizza.

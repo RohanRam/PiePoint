@@ -6,16 +6,16 @@ import com.piepoint.app.data.model.*
 object MockDataProvider {
 
     val toppings = listOf(
-        Topping("t1", "Cheese", "\uD83E\uDDC0", 1.0),
-        Topping("t2", "Pepperoni", "\uD83C\uDF56", 1.5),
-        Topping("t3", "Mushroom", "\uD83C\uDF44", 1.0),
-        Topping("t4", "Olive", "\uD83E\uDEB4", 0.75),
-        Topping("t5", "Onion", "\uD83E\uDDC5", 0.5),
-        Topping("t6", "Bell Pepper", "\uD83E\uDED1", 0.75),
-        Topping("t7", "Tomato", "\uD83C\uDF45", 0.5),
-        Topping("t8", "Basil", "\uD83C\uDF3F", 0.5),
-        Topping("t9", "Bacon", "\uD83E\uDD53", 1.5),
-        Topping("t10", "Jalapeño", "\uD83C\uDF36", 0.75)
+        Topping("t1", "Cheese", "\uD83E\uDDC0", 1.0, R.drawable.cheese),
+        Topping("t2", "Pepperoni", "\uD83C\uDF56", 1.5, R.drawable.pepporoni),
+        Topping("t3", "Mushroom", "\uD83C\uDF44", 1.0, R.drawable.mushroom),
+        Topping("t4", "Olive", "\uD83E\uDEB4", 0.75, R.drawable.olive2),
+        Topping("t5", "Onion", "\uD83E\uDDC5", 0.5, R.drawable.onion),
+        Topping("t6", "Bell Pepper", "\uD83E\uDED1", 0.75, R.drawable.green_pepper),
+        Topping("t7", "Tomato", "\uD83C\uDF45", 0.5, R.drawable.tomato),
+        Topping("t8", "Basil", "\uD83C\uDF3F", 0.5, R.drawable.basil),
+        Topping("t9", "Bacon", "\uD83E\uDD53", 1.5, R.drawable.beacon),
+        Topping("t10", "Jalapeño", "\uD83C\uDF36", 0.75, R.drawable.jalapeaneo)
     )
 
     val categories = listOf(

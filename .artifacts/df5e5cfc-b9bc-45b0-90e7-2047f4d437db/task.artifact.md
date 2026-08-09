@@ -1,6 +1,8 @@
-- `[x]` Remove XL size from `PizzaSize` enum in `Models.kt`
-- `[x]` Implement pizza scaling animation in `PizzaDetailScreen.kt`
-    - `[x]` Define scale factors for S, M, L
-    - `[x]` Add `animateFloatAsState` with spring spec
-    - `[x]` Apply scale to the Hero pizza image
-- `[x]` Verify changes with build and manual check
+- `[x]` Map realistic images in `MockDataProvider.kt`
+- `[x]` Update `PizzaDetailScreen.kt` for Realistic Toppings
+    - `[x]` Replace emojis with `Image` components
+    - `[x]` Add shadow/rotation for 3D effect on pizza
+- `[x]` Unify `SizeChip` layout dimensions
+- `[x]` Implement Infinite Loop for topping `LazyRow`
+- `[x]` Fix and animate Drag & Drop functionality
+- `[x]` Final build and verification

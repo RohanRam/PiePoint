@@ -228,20 +228,6 @@ private fun FeaturedPizzaSection(
                         fontWeight = FontWeight.ExtraBold,
                         color = OrangeAccent
                     )
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(OrangeAccent)
-                            .clickable { onPizzaClick(featured.id) }
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    ) {
-                        Text(
-                            text = "Order Now",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
 
