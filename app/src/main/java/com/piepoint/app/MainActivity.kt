@@ -5,32 +5,47 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.*
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.piepoint.app.ui.navigation.BottomNavItem
 import com.piepoint.app.ui.navigation.PizzaNavGraph
 import com.piepoint.app.ui.navigation.Screen
-import com.piepoint.app.ui.theme.PiePointTheme
 import com.piepoint.app.ui.theme.*
 import com.piepoint.app.ui.viewmodel.CartViewModel
+import kotlin.math.*
+
+// ─── Activity ────────────────────────────────────────────────────────────────
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,114 +59,281 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// ─── Icon map ─────────────────────────────────────────────────────────────────
+
+private val navIcons: Map<String, ImageVector> = mapOf(
+    BottomNavItem.Discover.route to Icons.Rounded.Explore,
+    BottomNavItem.Offers.route   to Icons.Rounded.LocalOffer,
+    BottomNavItem.Menu.route     to Icons.Rounded.LocalPizza,
+    BottomNavItem.Orders.route   to Icons.AutoMirrored.Rounded.ReceiptLong,
+    BottomNavItem.Profile.route  to Icons.Rounded.Person
+)
+
+private val allNavItems = listOf(
+    BottomNavItem.Discover,
+    BottomNavItem.Offers,
+    BottomNavItem.Menu,
+    BottomNavItem.Orders,
+    BottomNavItem.Profile
+)
+
+// ─── Root ────────────────────────────────────────────────────────────────────
+
 @Composable
 fun PiePointApp() {
     val navController = rememberNavController()
     val cartViewModel: CartViewModel = viewModel()
 
-    val bottomNavItems = listOf(
-        BottomNavItem.Home,
-        BottomNavItem.Orders,
-        BottomNavItem.Profile
-    )
-
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
+    val currentRoute = navBackStackEntry?.destination?.route
 
-    // Screens that should show bottom nav
-    val showBottomNav = currentDestination?.route in listOf(
+    val bottomNavRoutes = setOf(
         Screen.Home.route,
+        Screen.Discover.route,
+        Screen.Offers.route,
         Screen.OrderHistory.route,
         Screen.Profile.route
     )
+    val showBottomNav = currentRoute in bottomNavRoutes
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = BackgroundWhite,
-        bottomBar = {
-            if (showBottomNav) {
-                PizzaBottomNavBar(
-                    items = bottomNavItems,
-                    currentDestination = currentDestination?.route,
-                    onItemClick = { item ->
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                )
-            }
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = BackgroundWhite
+        ) { _ ->
+            PizzaNavGraph(
+                navController = navController,
+                cartViewModel = cartViewModel
+            )
         }
-    ) { innerPadding ->
-        PizzaNavGraph(
-            navController = navController,
-            cartViewModel = cartViewModel
-        )
+
+        if (showBottomNav) {
+            SleekNotchedNavBar(
+                currentRoute = currentRoute,
+                modifier = Modifier.align(Alignment.BottomCenter),
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
+        }
     }
 }
 
+// ─── Sleek Nav Bar with Bezier Notch ─────────────────────────────────────────
+
 @Composable
-private fun PizzaBottomNavBar(
-    items: List<BottomNavItem>,
-    currentDestination: String?,
-    onItemClick: (BottomNavItem) -> Unit
+fun SleekNotchedNavBar(
+    currentRoute: String?,
+    modifier: Modifier = Modifier,
+    onNavigate: (String) -> Unit
 ) {
-    val icons: Map<String, ImageVector> = mapOf(
-        BottomNavItem.Home.route to Icons.Rounded.Restaurant,
-        BottomNavItem.Orders.route to Icons.Rounded.ReceiptLong,
-        BottomNavItem.Profile.route to Icons.Rounded.Person
+    val selectedIndex = allNavItems.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
+
+    val animatedIndex by animateFloatAsState(
+        targetValue = selectedIndex.toFloat(),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "nav_index"
     )
 
-    NavigationBar(
-        modifier = Modifier
+    val density = LocalDensity.current
+    val pillHeight = 76.dp
+    val hMargin = 20.dp
+    val bottomMargin = 24.dp
+    
+    val notchWidthPx = with(density) { 90.dp.toPx() }
+    val notchHeightPx = with(density) { 32.dp.toPx() }
+
+    Box(
+        modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
-        containerColor = SurfaceWhite,
-        tonalElevation = 8.dp
+            .padding(horizontal = hMargin)
+            .padding(bottom = bottomMargin)
     ) {
-        items.forEach { item ->
-            val isSelected = currentDestination == item.route
-            val iconColor by animateColorAsState(
-                targetValue = if (isSelected) OrangeAccent else TextHint,
-                animationSpec = tween(200), label = "nav_icon"
+        // ── Canvas: Curved Background Pill ──
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(pillHeight)
+        ) {
+            val width = size.width
+            val height = size.height
+            val itemWidth = width / allNavItems.size
+            val notchCx = itemWidth * (animatedIndex + 0.5f)
+
+            val path = buildSmoothNotchPath(
+                width = width,
+                height = height,
+                notchCx = notchCx,
+                notchWidth = notchWidthPx,
+                notchHeight = notchHeightPx,
+                cornerRadius = with(density) { 32.dp.toPx() }
             )
-            NavigationBarItem(
-                selected = isSelected,
-                onClick = { onItemClick(item) },
-                icon = {
-                    Box(contentAlignment = Alignment.Center) {
-                        if (isSelected) {
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(OrangeAccent.copy(alpha = 0.12f))
-                            )
-                        }
-                        Icon(
-                            imageVector = icons[item.route] ?: Icons.Rounded.Circle,
-                            contentDescription = item.label,
-                            tint = iconColor,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                },
-                label = {
-                    Text(
-                        text = item.label,
-                        color = iconColor,
-                        style = MaterialTheme.typography.labelSmall
+
+            // Shadow
+            drawIntoCanvas { canvas ->
+                val nativeCanvas = canvas.nativeCanvas
+                val paint = Paint().asFrameworkPaint().apply {
+                    isAntiAlias = true
+                    color = android.graphics.Color.TRANSPARENT
+                    setShadowLayer(
+                        35f, 0f, 12f, 
+                        android.graphics.Color.argb(45, 0, 0, 0)
                     )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = OrangeAccent,
-                    unselectedIconColor = TextHint,
-                    indicatorColor = Color.Transparent
+                }
+                nativeCanvas.drawPath(path.asAndroidPath(), paint)
+            }
+
+            // Pill Body
+            drawPath(path, color = Color.White)
+        }
+
+        // ── Floating Active Circle ──
+        val config = LocalConfiguration.current
+        val screenWidthDp = config.screenWidthDp.dp
+        val availableWidthDp = screenWidthDp - (hMargin * 2)
+        val itemWidthDp = availableWidthDp / allNavItems.size
+        val circleSize = 54.dp
+        
+        Box(
+            modifier = Modifier
+                .size(circleSize)
+                .offset(
+                    x = (itemWidthDp * animatedIndex) + (itemWidthDp / 2) - (circleSize / 2),
+                    y = (-32).dp
                 )
+                .shadow(18.dp, CircleShape, spotColor = OrangeAccent.copy(alpha = 0.5f))
+                .clip(CircleShape)
+                .background(OrangeAccent),
+            contentAlignment = Alignment.Center
+        ) {
+            val currentItem = allNavItems[selectedIndex]
+            Icon(
+                imageVector = navIcons[currentItem.route] ?: Icons.Rounded.Circle,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(26.dp)
             )
         }
+
+        // ── Navigation Items ──
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(pillHeight),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            allNavItems.forEachIndexed { index, item ->
+                val isSelected = index == selectedIndex
+                
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { onNavigate(item.route) }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!isSelected) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = navIcons[item.route] ?: Icons.Rounded.Circle,
+                                contentDescription = null,
+                                tint = TextHint.copy(alpha = 0.8f),
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = item.label,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextHint.copy(alpha = 0.8f),
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 10.sp
+                            )
+                        }
+                    } else {
+                        // Label for the active item sits below the notch
+                        Text(
+                            text = item.label,
+                            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = OrangeAccent,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            }
+        }
     }
+}
+
+/**
+ * Builds a path for a pill-shaped bar with a smooth Bezier notch at the top.
+ */
+private fun buildSmoothNotchPath(
+    width: Float,
+    height: Float,
+    notchCx: Float,
+    notchWidth: Float,
+    notchHeight: Float,
+    cornerRadius: Float
+): Path = Path().apply {
+    val notchHalfWidth = notchWidth / 2f
+    val start = notchCx - notchHalfWidth
+    val end = notchCx + notchHalfWidth
+    val controlOffset = notchWidth * 0.25f
+    
+    // Start top-left
+    moveTo(0f, cornerRadius)
+    
+    // Top-left corner
+    quadraticTo(0f, 0f, cornerRadius, 0f)
+    
+    // Line to start of notch
+    lineTo(start, 0f)
+    
+    // ── Symmetrical Bezier Notch ──
+    cubicTo(
+        x1 = start + controlOffset, y1 = 0f,
+        x2 = notchCx - controlOffset, y2 = notchHeight,
+        x3 = notchCx, y3 = notchHeight
+    )
+    
+    cubicTo(
+        x1 = notchCx + controlOffset, y1 = notchHeight,
+        x2 = end - controlOffset, y2 = 0f,
+        x3 = end, y3 = 0f
+    )
+    
+    // Line to top-right
+    lineTo(width - cornerRadius, 0f)
+    
+    // Top-right corner
+    quadraticTo(width, 0f, width, cornerRadius)
+    
+    // Right side
+    lineTo(width, height - cornerRadius)
+    
+    // Bottom-right corner
+    quadraticTo(width, height, width - cornerRadius, height)
+    
+    // Bottom edge
+    lineTo(cornerRadius, height)
+    
+    // Bottom-left corner
+    quadraticTo(0f, height, 0f, height - cornerRadius)
+    
+    close()
 }

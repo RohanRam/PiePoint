@@ -1,31 +1,36 @@
-# Implementation Plan - Auto-sliding Infinite Pizza Carousel
+# Implementation Plan - Sleek Notched Navigation Bar
 
-This plan details the steps to implement an automatic sliding mechanism for the featured pizza card on the Home screen, including infinite looping.
+This plan covers the redesign of the bottom navigation bar to match the "sleek, 3D notched" design provided in the reference image.
 
 ## Proposed Changes
 
-### [Component: Home Screen]
-#### [MODIFY] [HomeScreen.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/screens/HomeScreen.kt)
-- **Auto-Slide Logic**:
-    - Add a `LaunchedEffect` in `HomeScreen` that runs a timer.
-    - Every 5 seconds, it will increment the `featuredIndex` in the `HomeViewModel`.
-    - To prevent conflicts with manual user interaction, the timer will reset if the user manually selects a pizza or swipes the carousel.
-- **Infinite Carousel Implementation**:
-    - Refactor `FeaturedPizzaSection` to use `HorizontalPager` from `androidx.compose.foundation.pager`.
-    - Set `pageCount` to a very large value (e.g., `Int.MAX_VALUE`) to simulate an infinite loop.
-    - Map the pager's `currentPage` to the `pizzas` list index using modulo arithmetic (`currentPage % pizzas.size`).
-    - Synchronize the `pagerState.currentPage` with the `HomeViewModel.featuredIndex` (and vice versa) to keep indicators and thumbnails in sync.
-- **Visual Polish**:
-    - Ensure the 3D floating animations continue to work seamlessly within each pager slide.
-    - Use `animateScrollToPage` for the auto-sliding transition to give it a smooth horizontal motion.
+### [Component: Main Activity / Navigation]
+
+#### 1. Custom Smooth-Notched Path
+- **[MODIFY] [MainActivity.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/MainActivity.kt)**:
+    - Replace the current circular arc notch with a **Cubic Bezier curve** notch. This will create the smooth "bell-shape" transition seen in the design.
+    - The notch will dynamically follow the selected item index.
+
+#### 2. Center FAB Styling
+- **[MODIFY] [MainActivity.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/MainActivity.kt)**:
+    - Redesign the active item indicator to be a **solid dark circle** (floating inside the notch) with a white icon.
+    - Apply a high elevation shadow to the center circle to make it "pop" (3D feel).
+
+#### 3. Glassmorphic Pill Background
+- **[MODIFY] [MainActivity.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/MainActivity.kt)**:
+    - Refine the pill background with a cleaner shadow and a subtle white border to match the premium look of the reference image.
+
+#### 4. Item Layout & Typography
+- **[MODIFY] [MainActivity.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/MainActivity.kt)**:
+    - Adjust icon sizes and label typography (font weight, spacing) to align with the minimalist aesthetic.
+    - Ensure 5 items (Discover, Offers, Menu, Orders, Profile) are spaced evenly, with the Menu always inhabiting the "center" notch role when selected.
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `gradle_build(":app:assembleDebug")` to verify successful compilation with the new Pager components.
+- Run `gradle_build(":app:assembleDebug")` to ensure layout changes don't break the build.
 
 ### Manual Verification
-- **Auto-Slide**: Open the app and wait 5 seconds. The featured card should automatically slide to the next pizza.
-- **Infinite Loop**: Swipe manually multiple times in one direction. It should never reach a hard end and continue to loop through the pizzas.
-- **Sync**: Verify that auto-sliding the card also updates the dot indicators and the selected thumbnail below the carousel.
-- **User Interruption**: Verify that if the user manually taps a thumbnail, the carousel jumps to that pizza and the 5-second timer restarts.
+- **Visual Accuracy**: Compare the running app's navbar to the provided design image.
+- **Notch Animation**: Verify that the notch slides smoothly when switching between tabs.
+- **Center Button**: Ensure the black circle indicator correctly holds the icon of the selected tab and sits perfectly in the dip.

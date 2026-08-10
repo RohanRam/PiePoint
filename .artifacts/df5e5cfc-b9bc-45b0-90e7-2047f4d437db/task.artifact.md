@@ -1,12 +1,8 @@
-- `[ ]` Implement Infinite Pager for Featured Pizzas
-    - `[ ]` Refactor `FeaturedPizzaSection` to use `HorizontalPager`
-    - `[ ]` Implement infinite loop logic (large item count + modulo)
-- `[ ]` Add Auto-Slide Functionality
-    - `[ ]` Add `LaunchedEffect` with 5-second timer
-    - `[ ]` Implement smooth page transition logic
-- `[ ]` Synchronize State
-    - `[ ]` Sync `PagerState` with `HomeViewModel` featured index
-    - `[ ]` Update indicators and thumbnails based on pager position
-- `[ ]` Verification
-    - `[ ]` Build and run
-    - `[ ]` Test auto-slide and infinite loop manually
+- `[x]` Redesign Navigation Bar to match reference
+    - `[x]` Implement Smooth Bezier Notch Path in `MainActivity.kt`
+    - `[x]` Add Floating Active Circle (FAB style)
+    - `[x]` Refine typography and icon styling
+    - `[x]` Update slide animations for the new notch shape
+- `[x]` Verification
+    - `[x]` Build project
+    - `[x]` Manual visual check on emulator
