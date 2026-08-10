@@ -56,10 +56,18 @@ fun HomeScreen(
     )
 
     // Auto-slide logic
-    LaunchedEffect(key1 = pagerState.currentPage, key2 = pizzas.size) {
+    LaunchedEffect(pagerState.settledPage) {
         if (pizzas.isNotEmpty()) {
-            delay(5000)
-            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+            delay(3500)
+            if (!pagerState.isScrollInProgress) {
+                pagerState.animateScrollToPage(
+                    page = pagerState.currentPage + 1,
+                    animationSpec = tween(
+                        durationMillis = 1000,
+                        easing = FastOutSlowInEasing
+                    )
+                )
+            }
         }
     }
 
@@ -147,9 +155,19 @@ fun HomeScreen(
                             .clickable { 
                                 val currentPage = pagerState.currentPage
                                 val currentActualIndex = currentPage % pizzas.size
+                                
+                                // Calculate the nearest page for the target index
                                 val diff = index - currentActualIndex
+                                val targetPage = currentPage + diff
+                                
                                 scope.launch {
-                                    pagerState.animateScrollToPage(currentPage + diff)
+                                    pagerState.animateScrollToPage(
+                                        page = targetPage,
+                                        animationSpec = tween(
+                                            durationMillis = 1500,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    )
                                 }
                             }
                             .padding(8.dp),
@@ -338,9 +356,9 @@ private fun FeaturedPizzaCard(
         // Pizza "Popping Out" Image
         Box(
             modifier = Modifier
-                .size(200.dp)
+                .size(220.dp)
                 .align(Alignment.CenterEnd)
-                .offset(x = 20.dp, y = floatOffset.dp)
+                .offset(x = 10.dp, y = floatOffset.dp)
                 .graphicsLayer {
                     rotationZ = rotation
                     cameraDistance = 12f
@@ -350,11 +368,11 @@ private fun FeaturedPizzaCard(
             // Shadow under pizza
             Box(
                 modifier = Modifier
-                    .size(160.dp)
+                    .size(170.dp)
                     .graphicsLayer { 
                         scaleX = 0.9f 
                         scaleY = 0.4f
-                        translationY = 80f
+                        translationY = 85f
                     }
                     .shadow(40.dp, CircleShape, spotColor = Color.Black.copy(alpha = 0.8f))
             )
@@ -363,8 +381,7 @@ private fun FeaturedPizzaCard(
                 imageRes = pizza.imageRes,
                 contentDescription = pizza.name,
                 modifier = Modifier
-                    .size(180.dp)
-                    .clip(CircleShape)
+                    .size(190.dp)
                     .shadow(20.dp, CircleShape)
             )
         }
