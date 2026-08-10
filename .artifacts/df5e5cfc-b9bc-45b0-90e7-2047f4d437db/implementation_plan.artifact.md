@@ -1,45 +1,31 @@
-# Implementation Plan - Modern 3D & Sleek UI Overhaul
+# Implementation Plan - Auto-sliding Infinite Pizza Carousel
 
-This plan aims to transform the current flat UI into a modern, sleek experience with depth (3D feel), glassmorphism, and fluid animations.
-
-## User Review Required
-
-> [!NOTE]
-> This overhaul will introduce significant visual changes, including gradients, glassmorphic effects, and motion-based 3D depth. The goal is to make the app feel "premium" and modern.
+This plan details the steps to implement an automatic sliding mechanism for the featured pizza card on the Home screen, including infinite looping.
 
 ## Proposed Changes
 
-### [Theme & Visual Language]
-#### [MODIFY] [Color.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/theme/Color.kt)
-- Introduce "Glass" colors: semi-translucent whites and blacks.
-- Define modern gradients (e.g., `SurfaceGradient`, `CardGradient`).
-
 ### [Component: Home Screen]
 #### [MODIFY] [HomeScreen.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/screens/HomeScreen.kt)
-- **3D Floating Pizzas**: Enhance the `FeaturedPizzaSection` to use a multi-layered shadow and subtle 3D tilt that responds to interaction.
-- **Glassmorphic Top Bar**: Update `HomeTopBar` to feel like a glass panel floating over the content.
-- **Sleek Section Headers**: Use cleaner typography with letter-spacing and gradients.
-
-### [Component: Pizza Detail Screen]
-#### [MODIFY] [PizzaDetailScreen.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/screens/PizzaDetailScreen.kt)
-- **Enhanced 3D Hero**:
-    - Add a dynamic shadow "floor" under the pizza.
-    - Implement a "pop-in" entry animation for the pizza and ingredients.
-- **Glassmorphic Size Selector**: Redesign `SizeChip` to use semi-translucent backgrounds with thin, high-contrast borders.
-- **Animated Snap**: Make the drag-and-drop placement feel "heavy" with a bouncy snap animation and a slight zoom effect on the pizza when a topping is hovering.
-
-### [Component: Shared UI]
-#### [MODIFY] [CommonComponents.kt](file:///D:/00/0 Working/PiePoint/app/src/main/java/com/piepoint/app/ui/components/CommonComponents.kt)
-- **Modernized PizzaCard**: Add a subtle 3D lift effect on press.
-- **Glassmorphic CartBadge**: Update the badge to use glassmorphism.
-- **Premium GradientButton**: Use multi-layer gradients and a subtle inner glow.
+- **Auto-Slide Logic**:
+    - Add a `LaunchedEffect` in `HomeScreen` that runs a timer.
+    - Every 5 seconds, it will increment the `featuredIndex` in the `HomeViewModel`.
+    - To prevent conflicts with manual user interaction, the timer will reset if the user manually selects a pizza or swipes the carousel.
+- **Infinite Carousel Implementation**:
+    - Refactor `FeaturedPizzaSection` to use `HorizontalPager` from `androidx.compose.foundation.pager`.
+    - Set `pageCount` to a very large value (e.g., `Int.MAX_VALUE`) to simulate an infinite loop.
+    - Map the pager's `currentPage` to the `pizzas` list index using modulo arithmetic (`currentPage % pizzas.size`).
+    - Synchronize the `pagerState.currentPage` with the `HomeViewModel.featuredIndex` (and vice versa) to keep indicators and thumbnails in sync.
+- **Visual Polish**:
+    - Ensure the 3D floating animations continue to work seamlessly within each pager slide.
+    - Use `animateScrollToPage` for the auto-sliding transition to give it a smooth horizontal motion.
 
 ## Verification Plan
 
 ### Automated Tests
-- Build project: `gradle_build(":app:assembleDebug")`.
+- Run `gradle_build(":app:assembleDebug")` to verify successful compilation with the new Pager components.
 
 ### Manual Verification
-- **Visual Depth**: Verify that elements appear to exist in 3D space via layering and shadows.
-- **Motion Sleekness**: Ensure animations are fluid, bouncy (spring-based), and not jerky.
-- **Glass Effect**: Check legibility over semi-translucent surfaces.
+- **Auto-Slide**: Open the app and wait 5 seconds. The featured card should automatically slide to the next pizza.
+- **Infinite Loop**: Swipe manually multiple times in one direction. It should never reach a hard end and continue to loop through the pizzas.
+- **Sync**: Verify that auto-sliding the card also updates the dot indicators and the selected thumbnail below the carousel.
+- **User Interruption**: Verify that if the user manually taps a thumbnail, the carousel jumps to that pizza and the 5-second timer restarts.

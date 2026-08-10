@@ -6,6 +6,8 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,6 +32,8 @@ import com.piepoint.app.ui.components.*
 import com.piepoint.app.ui.theme.*
 import com.piepoint.app.ui.viewmodel.CartViewModel
 import com.piepoint.app.ui.viewmodel.HomeViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +46,30 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val cartItemCount by remember { derivedStateOf { cartViewModel.itemCount } }
+    val scope = rememberCoroutineScope()
+
+    val pizzas = uiState.featuredPizzas
+    val initialPage = if (pizzas.isNotEmpty()) 1000 * pizzas.size + uiState.featuredIndex else 0
+    val pagerState = rememberPagerState(
+        initialPage = initialPage,
+        pageCount = { if (pizzas.isNotEmpty()) Int.MAX_VALUE else 0 }
+    )
+
+    // Auto-slide logic
+    LaunchedEffect(key1 = pagerState.currentPage, key2 = pizzas.size) {
+        if (pizzas.isNotEmpty()) {
+            delay(5000)
+            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+        }
+    }
+
+    // Sync pager state back to ViewModel for other components (indicators, thumbnails)
+    LaunchedEffect(pagerState.currentPage) {
+        if (pizzas.isNotEmpty()) {
+            val actualIndex = pagerState.currentPage % pizzas.size
+            viewModel.setFeaturedIndex(actualIndex)
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -79,14 +107,61 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Featured Pizza Section (3D Hero)
-            if (uiState.featuredPizzas.isNotEmpty()) {
-                FeaturedPizzaSection(
-                    pizzas = uiState.featuredPizzas,
-                    featuredIndex = uiState.featuredIndex,
-                    onPizzaClick = onPizzaClick,
-                    onIndexChanged = { viewModel.setFeaturedIndex(it) }
-                )
+            // Featured Pizza Section (3D Hero with Pager)
+            if (pizzas.isNotEmpty()) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth()
+                ) { page ->
+                    val actualIndex = page % pizzas.size
+                    FeaturedPizzaCard(
+                        pizza = pizzas[actualIndex],
+                        currentIndex = actualIndex,
+                        totalCount = pizzas.size,
+                        onPizzaClick = onPizzaClick
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Thumbnails for selection
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(pizzas) { index, pizza ->
+                    val isSelected = index == uiState.featuredIndex
+                    val borderAlpha by animateFloatAsState(if (isSelected) 1f else 0f, label = "thumb_border")
+                    
+                    Box(
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (isSelected) OrangeAccent.copy(alpha = 0.05f) else Color.White)
+                            .border(
+                                width = 2.dp,
+                                color = OrangeAccent.copy(alpha = borderAlpha),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .clickable { 
+                                val currentPage = pagerState.currentPage
+                                val currentActualIndex = currentPage % pizzas.size
+                                val diff = index - currentActualIndex
+                                scope.launch {
+                                    pagerState.animateScrollToPage(currentPage + diff)
+                                }
+                            }
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            imageRes = pizza.imageRes,
+                            contentDescription = pizza.name,
+                            modifier = Modifier.size(50.dp).clip(CircleShape)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -115,7 +190,7 @@ fun HomeScreen(
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                itemsIndexed(uiState.featuredPizzas) { _, pizza ->
+                itemsIndexed(pizzas) { _, pizza ->
                     PizzaCard(
                         pizza = pizza,
                         onClick = { onPizzaClick(pizza.id) }
@@ -164,14 +239,12 @@ private fun HomeTopBar(
 }
 
 @Composable
-private fun FeaturedPizzaSection(
-    pizzas: List<Pizza>,
-    featuredIndex: Int,
-    onPizzaClick: (String) -> Unit,
-    onIndexChanged: (Int) -> Unit
+private fun FeaturedPizzaCard(
+    pizza: Pizza,
+    currentIndex: Int,
+    totalCount: Int,
+    onPizzaClick: (String) -> Unit
 ) {
-    val featured = pizzas[featuredIndex]
-    
     // Idle animation for 3D float
     val infiniteTransition = rememberInfiniteTransition(label = "hero_float")
     val floatOffset by infiniteTransition.animateFloat(
@@ -211,7 +284,7 @@ private fun FeaturedPizzaSection(
                         colors = listOf(Color(0xFFFFE8DC), Color(0xFFFFF3EE), Color.White)
                     )
                 )
-                .clickable { onPizzaClick(featured.id) }
+                .clickable { onPizzaClick(pizza.id) }
                 .padding(24.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth(0.55f)) {
@@ -230,7 +303,7 @@ private fun FeaturedPizzaSection(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = featured.name,
+                    text = pizza.name,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold,
                     color = TextPrimary,
@@ -239,7 +312,7 @@ private fun FeaturedPizzaSection(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "$${featured.basePrice}",
+                    text = "$${pizza.basePrice}",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Black,
                     color = OrangeAccent
@@ -249,14 +322,13 @@ private fun FeaturedPizzaSection(
                 
                 // Indicators
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    pizzas.forEachIndexed { index, _ ->
-                        val width by animateDpAsState(if (index == featuredIndex) 20.dp else 6.dp, label = "dot")
+                    repeat(totalCount) { index ->
+                        val width by animateDpAsState(if (index == currentIndex) 20.dp else 6.dp, label = "dot")
                         Box(
                             modifier = Modifier
                                 .size(width, 6.dp)
                                 .clip(CircleShape)
-                                .background(if (index == featuredIndex) OrangeAccent else Color(0xFFDCDCDC))
-                                .clickable { onIndexChanged(index) }
+                                .background(if (index == currentIndex) OrangeAccent else Color(0xFFDCDCDC))
                         )
                     }
                 }
@@ -288,47 +360,13 @@ private fun FeaturedPizzaSection(
             )
             
             Image(
-                imageRes = featured.imageRes,
-                contentDescription = featured.name,
+                imageRes = pizza.imageRes,
+                contentDescription = pizza.name,
                 modifier = Modifier
                     .size(180.dp)
                     .clip(CircleShape)
                     .shadow(20.dp, CircleShape)
             )
-        }
-    }
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    // Thumbnails for selection
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        itemsIndexed(pizzas) { index, pizza ->
-            val isSelected = index == featuredIndex
-            val borderAlpha by animateFloatAsState(if (isSelected) 1f else 0f, label = "thumb_border")
-            
-            Box(
-                modifier = Modifier
-                    .size(70.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(if (isSelected) OrangeAccent.copy(alpha = 0.05f) else Color.White)
-                    .border(
-                        width = 2.dp,
-                        color = OrangeAccent.copy(alpha = borderAlpha),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                    .clickable { onIndexChanged(index) }
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    imageRes = pizza.imageRes,
-                    contentDescription = pizza.name,
-                    modifier = Modifier.size(50.dp).clip(CircleShape)
-                )
-            }
         }
     }
 }

@@ -1,30 +1,28 @@
-# Walkthrough - Modern 3D & Sleek UI Overhaul
+# Walkthrough - Auto-sliding Infinite Pizza Carousel
 
-I have completely transformed the PiePoint app into a modern, premium experience with a focus on 3D depth, sleek glassmorphism, and fluid animations.
+I have implemented an automatic sliding mechanism for the featured pizza card on the Home screen, which also supports infinite horizontal looping.
 
-## Key Visual Upgrades
+## Key Features
 
-### 1. 3D Depth & Immersion
-- **Home Screen Hero**: The featured pizza now "pops out" of its card with multi-layered shadows and a floating animation.
-- **Interactive Detail Hero**: The pizza in the detail screen now has a "shadow floor" that scales with it, creating a true sense of space.
-- **Tactile Feedback**: Added 3D lift effects to cards and buttons. They shrink and drop shadows when pressed, mimicking real physical objects.
+### 1. Auto-Slide Timer
+- **Automatic Transition**: The featured pizza card now automatically slides to the next item every **5 seconds**.
+- **Smooth Animation**: Uses `animateScrollToPage` for a fluid horizontal motion between slides.
+- **Smart Reset**: The timer is tied to the current page state, so manual interactions (like swiping or tapping a thumbnail) will naturally reset the 5-second countdown.
 
-### 2. Glassmorphism & Modern Accents
-- **Frosted Surfaces**: Replaced flat backgrounds with semi-translucent glass panels for the cart badge and top bars.
-- **Premium Gradients**: Implemented vibrant, modern gradients for buttons and backgrounds to move away from the outdated 2D look.
-- **Sleek Typography**: Updated spacing and font weights for a more artisan, high-end feel.
+### 2. Infinite Horizontal Loop
+- **Endless Scrolling**: Refactored the featured section to use a `HorizontalPager` with a virtually infinite page count (`Int.MAX_VALUE`).
+- **Seamless Wrap-around**: Using modulo arithmetic, the carousel seamlessly wraps around from the last pizza back to the first, and vice versa.
 
-### 3. Fluid & Sleek Motion
-- **Magnetic Drag & Drop**: Ingredients now feel "heavy" when dragged and snap onto the pizza with a bouncy spring animation.
-- **Seamless Transitions**: Replaced rigid UI updates with smooth `AnimatedContent` for price changes and `AnimatedVisibility` for feedback.
-- **Infinite Loop Selector**: The ingredient slider now scrolls endlessly with a smooth, frictionless feel.
+### 3. State Synchronization
+- **Fully Synced UI**: The auto-sliding card stays perfectly in sync with the dot indicators and the selectable pizza thumbnails below it.
+- **Interactive Thumbnails**: Tapping a thumbnail now triggers a smooth scroll to that pizza within the infinite loop.
 
 ## Verification Results
 
 ### Automated Tests
-- **Build**: Successfully executed `gradle assembleDebug`.
+- **Build**: Successfully executed `gradle assembleDebug` with the new Pager and Coroutine logic.
 
 ### Manual Verification
-- Verified the 3D "tilt" and "float" animations in the Home screen.
-- Confirmed the glassmorphic surfaces remain legible and sleek across different screens.
-- Verified the drag-and-drop mechanism provides satisfying visual feedback.
+- Verified that the card slides automatically after 5 seconds of inactivity.
+- Verified that swiping manually multiple times never hits a boundary.
+- Confirmed that dot indicators and thumbnails update in real-time as the card slides.

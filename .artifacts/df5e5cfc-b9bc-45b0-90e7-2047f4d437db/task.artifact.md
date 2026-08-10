@@ -1,15 +1,12 @@
-- `[x]` Modernize Theme and Colors
-    - `[x]` Add Glass and Gradient colors to `Color.kt`
-- `[x]` Update Shared Components in `CommonComponents.kt`
-    - `[x]` Glassmorphic `CartBadge`
-    - `[x]` Premium `GradientButton` with inner glow
-    - `[x]` 3D lift effect for `PizzaCard`
-- `[x]` Overhaul Home Screen (`HomeScreen.kt`)
-    - `[x]` Glassmorphic `HomeTopBar`
-    - `[x]` 3D Parallax/Tilt effect for Featured Pizza
-    - `[x]` Sleek typography and layout spacing
-- `[x]` Overhaul Pizza Detail Screen (`PizzaDetailScreen.kt`)
-    - `[x]` Enhanced 3D Hero with shadow floor
-    - `[x]` Glassmorphic `SizeChip`
-    - `[x]` Bouncy magnetic drag-and-drop animations
-- `[x]` Final Verification and Build
+- `[ ]` Implement Infinite Pager for Featured Pizzas
+    - `[ ]` Refactor `FeaturedPizzaSection` to use `HorizontalPager`
+    - `[ ]` Implement infinite loop logic (large item count + modulo)
+- `[ ]` Add Auto-Slide Functionality
+    - `[ ]` Add `LaunchedEffect` with 5-second timer
+    - `[ ]` Implement smooth page transition logic
+- `[ ]` Synchronize State
+    - `[ ]` Sync `PagerState` with `HomeViewModel` featured index
+    - `[ ]` Update indicators and thumbnails based on pager position
+- `[ ]` Verification
+    - `[ ]` Build and run
+    - `[ ]` Test auto-slide and infinite loop manually
