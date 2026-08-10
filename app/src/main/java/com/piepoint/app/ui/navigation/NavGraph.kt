@@ -30,32 +30,16 @@ fun PizzaNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                tween(300)
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                tween(300)
-            )
-        },
-        popEnterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                tween(300)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                tween(300)
-            )
-        }
+        startDestination = Screen.Home.route
     ) {
+        composable(Screen.Discover.route) {
+            DiscoverScreen()
+        }
+
+        composable(Screen.Offers.route) {
+            OffersScreen()
+        }
+
         composable(Screen.Home.route) {
             HomeScreen(
                 viewModel = homeViewModel,
