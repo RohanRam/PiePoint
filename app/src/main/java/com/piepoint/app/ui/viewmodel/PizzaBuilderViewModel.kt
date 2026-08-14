@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 class PizzaBuilderViewModel(
     private val repository: PizzaRepository = PizzaRepository()
@@ -103,6 +106,10 @@ class PizzaBuilderViewModel(
         )
         
         _uiState.update { it.copy(isAddingToCart = true) }
-        onComplete()
+        
+        viewModelScope.launch {
+            delay(800) // Match animation duration
+            onComplete()
+        }
     }
 }

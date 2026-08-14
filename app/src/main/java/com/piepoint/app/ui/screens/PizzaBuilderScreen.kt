@@ -1,10 +1,10 @@
 package com.piepoint.app.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,7 +28,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.util.Locale
 import com.piepoint.app.data.model.*
+import com.piepoint.app.ui.components.CartBadge
 import com.piepoint.app.ui.theme.*
 import com.piepoint.app.ui.viewmodel.CartViewModel
 import com.piepoint.app.ui.viewmodel.PizzaBuilderViewModel
@@ -39,10 +41,15 @@ import kotlinx.coroutines.launch
 fun PizzaBuilderScreen(
     cartViewModel: CartViewModel,
     onBack: () -> Unit,
+    onCartClick: () -> Unit,
     viewModel: PizzaBuilderViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val scope = rememberCoroutineScope()
+    val cartItemCount by cartViewModel.cartItems.collectAsState()
+
+    BackHandler(enabled = uiState.currentStep != PizzaBuilderStep.CRUST) {
+        viewModel.prevStep()
+    }
 
     Scaffold(
         topBar = {
@@ -62,9 +69,19 @@ fun PizzaBuilderScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        if (uiState.currentStep == PizzaBuilderStep.CRUST) onBack()
+                        else viewModel.prevStep()
+                    }) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    CartBadge(
+                        itemCount = cartItemCount.sumOf { it.quantity },
+                        onClick = onCartClick,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
@@ -158,15 +175,21 @@ fun PizzaBuilderScreen(
                 }
             }
             
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(140.dp)) // Extra space to scroll above the navbar and CTA
         }
     }
 }
 
 @Composable
 fun PizzaPreview(uiState: PizzaBuilderUiState) {
+    val cartAnimationProgress by animateFloatAsState(
+        targetValue = if (uiState.isAddingToCart) 1f else 0f,
+        animationSpec = tween(800, easing = FastOutSlowInEasing),
+        label = "add_to_cart_anim"
+    )
+
     val sizeScale by animateFloatAsState(
-        targetValue = when (uiState.selectedSize) {
+        targetValue = (if (uiState.isAddingToCart) 0.2f else 1f) * when (uiState.selectedSize) {
             PizzaSize.SMALL -> 0.75f
             PizzaSize.MEDIUM -> 0.85f
             PizzaSize.LARGE -> 1.0f
@@ -181,6 +204,9 @@ fun PizzaPreview(uiState: PizzaBuilderUiState) {
             .graphicsLayer {
                 scaleX = sizeScale
                 scaleY = sizeScale
+                translationY = -cartAnimationProgress * 1200f // Fly towards top-right
+                translationX = cartAnimationProgress * 600f
+                alpha = 1f - cartAnimationProgress
             },
         contentAlignment = Alignment.Center
     ) {
@@ -597,7 +623,7 @@ fun PizzaBuilderBottomBar(uiState: PizzaBuilderUiState, onNext: () -> Unit) {
                     label = "price_anim"
                 ) { price ->
                     Text(
-                        "$${String.format("%.2f", price)}",
+                        "$${String.format(Locale.US, "%.2f", price)}",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Black,
                         color = OrangeAccent
@@ -636,7 +662,7 @@ fun FlowRow(
     crossAxisSpacing: Dp = 0.dp,
     content: @Composable () -> Unit
 ) {
-    androidx.compose.foundation.layout.FlowRow(
+    FlowRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(mainAxisSpacing),
         verticalArrangement = Arrangement.spacedBy(crossAxisSpacing),

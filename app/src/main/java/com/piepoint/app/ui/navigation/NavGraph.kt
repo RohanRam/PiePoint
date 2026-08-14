@@ -12,11 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.piepoint.app.ui.screens.*
-import com.piepoint.app.ui.viewmodel.CartViewModel
-import com.piepoint.app.ui.viewmodel.DetailViewModel
-import com.piepoint.app.ui.viewmodel.HomeViewModel
-import com.piepoint.app.ui.viewmodel.OrderViewModel
-import com.piepoint.app.ui.viewmodel.ProfileViewModel
+import com.piepoint.app.ui.viewmodel.*
 
 @Composable
 fun PizzaNavGraph(
@@ -32,8 +28,12 @@ fun PizzaNavGraph(
         navController = navController,
         startDestination = Screen.Home.route
     ) {
-        composable(Screen.Discover.route) {
-            DiscoverScreen()
+        composable(Screen.Create.route) {
+            PizzaBuilderScreen(
+                cartViewModel = cartViewModel,
+                onBack = { navController.popBackStack() },
+                onCartClick = { navController.navigate(Screen.Cart.route) }
+            )
         }
 
         composable(Screen.Offers.route) {

@@ -4,13 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.geometry.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
 // ─── Icon map ─────────────────────────────────────────────────────────────────
 
 private val navIcons: Map<String, ImageVector> = mapOf(
-    BottomNavItem.Discover.route to Icons.Rounded.Explore,
+    BottomNavItem.Create.route   to Icons.Rounded.AddCircleOutline,
     BottomNavItem.Offers.route   to Icons.Rounded.LocalOffer,
     BottomNavItem.Menu.route     to Icons.Rounded.LocalPizza,
     BottomNavItem.Orders.route   to Icons.AutoMirrored.Rounded.ReceiptLong,
@@ -70,7 +70,7 @@ private val navIcons: Map<String, ImageVector> = mapOf(
 )
 
 private val allNavItems = listOf(
-    BottomNavItem.Discover,
+    BottomNavItem.Create,
     BottomNavItem.Offers,
     BottomNavItem.Menu,
     BottomNavItem.Orders,
@@ -89,7 +89,7 @@ fun PiePointApp() {
 
     val bottomNavRoutes = setOf(
         Screen.Home.route,
-        Screen.Discover.route,
+        Screen.Create.route,
         Screen.Offers.route,
         Screen.OrderHistory.route,
         Screen.Profile.route
@@ -100,11 +100,18 @@ fun PiePointApp() {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = BackgroundWhite
-        ) { _ ->
-            PizzaNavGraph(
-                navController = navController,
-                cartViewModel = cartViewModel
-            )
+        ) { paddingValues ->
+            val navBarHeight = if (showBottomNav) 110.dp else 0.dp
+            Box(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(bottom = navBarHeight)
+            ) {
+                PizzaNavGraph(
+                    navController = navController,
+                    cartViewModel = cartViewModel
+                )
+            }
         }
 
         if (showBottomNav) {
@@ -289,51 +296,40 @@ private fun buildSmoothNotchPath(
     notchWidth: Float,
     notchHeight: Float,
     cornerRadius: Float
-): Path = Path().apply {
-    val notchHalfWidth = notchWidth / 2f
-    val start = notchCx - notchHalfWidth
-    val end = notchCx + notchHalfWidth
-    val controlOffset = notchWidth * 0.25f
-    
-    // Start top-left
-    moveTo(0f, cornerRadius)
-    
-    // Top-left corner
-    quadraticTo(0f, 0f, cornerRadius, 0f)
-    
-    // Line to start of notch
-    lineTo(start, 0f)
-    
-    // ── Symmetrical Bezier Notch ──
-    cubicTo(
-        x1 = start + controlOffset, y1 = 0f,
-        x2 = notchCx - controlOffset, y2 = notchHeight,
-        x3 = notchCx, y3 = notchHeight
-    )
-    
-    cubicTo(
-        x1 = notchCx + controlOffset, y1 = notchHeight,
-        x2 = end - controlOffset, y2 = 0f,
-        x3 = end, y3 = 0f
-    )
-    
-    // Line to top-right
-    lineTo(width - cornerRadius, 0f)
-    
-    // Top-right corner
-    quadraticTo(width, 0f, width, cornerRadius)
-    
-    // Right side
-    lineTo(width, height - cornerRadius)
-    
-    // Bottom-right corner
-    quadraticTo(width, height, width - cornerRadius, height)
-    
-    // Bottom edge
-    lineTo(cornerRadius, height)
-    
-    // Bottom-left corner
-    quadraticTo(0f, height, 0f, height - cornerRadius)
-    
-    close()
+): Path {
+    val pillPath = Path().apply {
+        addRoundRect(
+            RoundRect(
+                left = 0f,
+                top = 0f,
+                right = width,
+                bottom = height,
+                cornerRadius = CornerRadius(cornerRadius)
+            )
+        )
+    }
+
+    val notchPath = Path().apply {
+        val notchHalfWidth = notchWidth / 2f
+        val start = notchCx - notchHalfWidth
+        val end = notchCx + notchHalfWidth
+        val controlOffset = notchWidth * 0.25f
+
+        moveTo(start, -1f)
+        lineTo(start, 0f)
+        cubicTo(
+            x1 = start + controlOffset, y1 = 0f,
+            x2 = notchCx - controlOffset, y2 = notchHeight,
+            x3 = notchCx, y3 = notchHeight
+        )
+        cubicTo(
+            x1 = notchCx + controlOffset, y1 = notchHeight,
+            x2 = end - controlOffset, y2 = 0f,
+            x3 = end, y3 = 0f
+        )
+        lineTo(end, -1f)
+        close()
+    }
+
+    return Path.combine(PathOperation.Difference, pillPath, notchPath)
 }

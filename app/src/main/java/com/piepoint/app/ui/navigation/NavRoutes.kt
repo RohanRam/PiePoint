@@ -2,7 +2,7 @@ package com.piepoint.app.ui.navigation
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
-    object Discover : Screen("discover")
+    object Create : Screen("create")
     object Offers : Screen("offers")
     object PizzaDetail : Screen("pizza_detail/{pizzaId}") {
         fun createRoute(pizzaId: String) = "pizza_detail/$pizzaId"
@@ -21,7 +21,7 @@ sealed class BottomNavItem(
     val label: String,
     val iconName: String
 ) {
-    object Discover : BottomNavItem("discover", "Discover", "explore")
+    object Create   : BottomNavItem("create",   "Create",   "add_circle_outline")
     object Offers   : BottomNavItem("offers",   "Offers",   "local_offer")
     object Menu     : BottomNavItem("home",      "Menu",     "local_pizza")   // center elevated
     object Orders   : BottomNavItem("order_history", "Orders", "receipt_long")

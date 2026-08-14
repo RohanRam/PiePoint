@@ -213,6 +213,13 @@ private fun CartItemCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )
+                if (item.pizza.isCustom) {
+                    Text(
+                        text = "${item.selectedCrust?.name ?: "Classic"} Crust • ${item.selectedSauce?.name ?: "Tomato"}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
                 if (item.selectedToppings.isNotEmpty()) {
                     Text(
                         text = item.selectedToppings.joinToString(", ") { it.name },

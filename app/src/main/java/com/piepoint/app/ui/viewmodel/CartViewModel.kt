@@ -27,11 +27,21 @@ class CartViewModel(
     val itemCount: Int
         get() = _cartItems.value.sumOf { it.quantity }
 
-    fun addToCart(pizza: Pizza, size: PizzaSize, toppings: List<Topping>) {
+    fun addToCart(
+        pizza: Pizza,
+        size: PizzaSize,
+        toppings: List<Topping>,
+        crust: Crust? = null,
+        sauce: Sauce? = null,
+        cheese: Cheese? = null
+    ) {
         val existingItem = _cartItems.value.find { item ->
             item.pizza.id == pizza.id &&
                     item.selectedSize == size &&
-                    item.selectedToppings.map { it.id }.sorted() == toppings.map { it.id }.sorted()
+                    item.selectedToppings.map { it.id }.sorted() == toppings.map { it.id }.sorted() &&
+                    item.selectedCrust?.id == crust?.id &&
+                    item.selectedSauce?.id == sauce?.id &&
+                    item.selectedCheese?.id == cheese?.id
         }
         if (existingItem != null) {
             _cartItems.update { items ->
@@ -43,6 +53,9 @@ class CartViewModel(
                 pizza = pizza,
                 selectedSize = size,
                 selectedToppings = toppings,
+                selectedCrust = crust,
+                selectedSauce = sauce,
+                selectedCheese = cheese,
                 quantity = 1
             )
             _cartItems.update { it + newItem }

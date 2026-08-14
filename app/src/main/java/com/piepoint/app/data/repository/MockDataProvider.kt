@@ -18,6 +18,29 @@ object MockDataProvider {
         Topping("t10", "Jalapeño", "\uD83C\uDF36", 0.75, R.drawable.jalapeaneo)
     )
 
+    val crusts = listOf(
+        Crust("c1", "Classic", "Hand-tossed classic crust", 0.0),
+        Crust("c2", "Thin & Crispy", "Thin and crunchy base", 0.0),
+        Crust("c3", "Cheese Burst", "Filled with melting cheese", 3.0),
+        Crust("c4", "Whole Wheat", "Healthy whole grain choice", 1.5),
+        Crust("c5", "Stuffed Crust", "Mozzarella-filled edges", 2.5)
+    )
+
+    val sauces = listOf(
+        Sauce("s1", "Classic Tomato", 0.0, 0xFFE74C3C),
+        Sauce("s2", "Spicy Arrabbiata", 0.5, 0xFFC0392B),
+        Sauce("s3", "Garlic Cream", 1.0, 0xFFFDFEFE),
+        Sauce("s4", "BBQ Sauce", 1.0, 0xFF7E5109),
+        Sauce("s5", "Pesto", 1.5, 0xFF27AE60)
+    )
+
+    val cheeses = listOf(
+        Cheese("ch1", "Mozzarella", 0.0),
+        Cheese("ch2", "Cheddar", 1.0),
+        Cheese("ch3", "Parmesan", 1.5),
+        Cheese("ch4", "Four Cheese", 2.5)
+    )
+
     val categories = listOf(
         PizzaCategory("cat1", "Pizza", "\uD83C\uDF55")
     )
