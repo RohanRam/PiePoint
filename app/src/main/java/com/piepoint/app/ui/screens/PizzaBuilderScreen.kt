@@ -189,12 +189,12 @@ fun PizzaBuilderScreen(
 fun PizzaPreview(uiState: PizzaBuilderUiState) {
     val cartAnimationProgress by animateFloatAsState(
         targetValue = if (uiState.isAddingToCart) 1f else 0f,
-        animationSpec = tween(800, easing = FastOutSlowInEasing),
+        animationSpec = tween(1000, easing = CubicBezierEasing(0.4f, 0.0f, 0.2f, 1f)),
         label = "add_to_cart_anim"
     )
 
     val sizeScale by animateFloatAsState(
-        targetValue = (if (uiState.isAddingToCart) 0.2f else 1f) * when (uiState.selectedSize) {
+        targetValue = (if (uiState.isAddingToCart) 0.15f else 1f) * when (uiState.selectedSize) {
             PizzaSize.SMALL -> 0.75f
             PizzaSize.MEDIUM -> 0.85f
             PizzaSize.LARGE -> 1.0f
@@ -203,15 +203,26 @@ fun PizzaPreview(uiState: PizzaBuilderUiState) {
         label = "pizza_size"
     )
 
+    // Cinematic 3D Rotation during fly
+    val cartRotation by animateFloatAsState(
+        targetValue = if (uiState.isAddingToCart) 720f else 0f,
+        animationSpec = tween(1000, easing = FastOutSlowInEasing),
+        label = "cart_rotation"
+    )
+
     Box(
         modifier = Modifier
             .size(300.dp)
             .graphicsLayer {
                 scaleX = sizeScale
                 scaleY = sizeScale
-                translationY = -cartAnimationProgress * 1200f
-                translationX = cartAnimationProgress * 600f
-                alpha = 1f - cartAnimationProgress
+                // Fly towards top-right (Cart Badge position)
+                translationY = -cartAnimationProgress * 1500f
+                translationX = cartAnimationProgress * 800f
+                rotationZ = cartRotation
+                rotationY = cartRotation / 2f
+                alpha = 1f - (cartAnimationProgress * 0.5f).coerceIn(0f, 1f)
+                cameraDistance = 15f
             },
         contentAlignment = Alignment.Center
     ) {
