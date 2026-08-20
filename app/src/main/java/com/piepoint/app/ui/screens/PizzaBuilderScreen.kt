@@ -35,6 +35,9 @@ import com.piepoint.app.ui.theme.*
 import com.piepoint.app.ui.viewmodel.CartViewModel
 import com.piepoint.app.ui.viewmodel.PizzaBuilderViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,16 +90,18 @@ fun PizzaBuilderScreen(
             )
         },
         bottomBar = {
-            PizzaBuilderBottomBar(
-                uiState = uiState,
-                onNext = {
-                    if (uiState.currentStep == PizzaBuilderStep.REVIEW) {
-                        viewModel.addToCart(cartViewModel, onBack)
-                    } else {
-                        viewModel.nextStep()
+            Box(modifier = Modifier.padding(bottom = 110.dp)) { // Floating above custom navbar
+                PizzaBuilderBottomBar(
+                    uiState = uiState,
+                    onNext = {
+                        if (uiState.currentStep == PizzaBuilderStep.REVIEW) {
+                            viewModel.addToCart(cartViewModel, onBack)
+                        } else {
+                            viewModel.nextStep()
+                        }
                     }
-                }
-            )
+                )
+            }
         },
         containerColor = BackgroundWhite
     ) { paddingValues ->
@@ -121,13 +126,13 @@ fun PizzaBuilderScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(320.dp),
+                    .height(300.dp),
                 contentAlignment = Alignment.Center
             ) {
                 PizzaPreview(uiState = uiState)
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Customization Area
             AnimatedContent(
@@ -175,7 +180,7 @@ fun PizzaBuilderScreen(
                 }
             }
             
-            Spacer(modifier = Modifier.height(140.dp)) // Extra space to scroll above the navbar and CTA
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
@@ -204,13 +209,19 @@ fun PizzaPreview(uiState: PizzaBuilderUiState) {
             .graphicsLayer {
                 scaleX = sizeScale
                 scaleY = sizeScale
-                translationY = -cartAnimationProgress * 1200f // Fly towards top-right
+                translationY = -cartAnimationProgress * 1200f
                 translationX = cartAnimationProgress * 600f
                 alpha = 1f - cartAnimationProgress
             },
         contentAlignment = Alignment.Center
     ) {
         // 1. Crust Layer
+        val crustColor = when (uiState.selectedCrust?.id) {
+            "c3" -> Color(0xFFD4AC0D)
+            "c4" -> Color(0xFF8D6E63)
+            else -> Color(0xFFE67E22)
+        }
+        
         AnimatedVisibility(
             visible = uiState.selectedCrust != null,
             enter = scaleIn(initialScale = 0.5f) + fadeIn(),
@@ -221,8 +232,8 @@ fun PizzaPreview(uiState: PizzaBuilderUiState) {
                     .fillMaxSize()
                     .shadow(16.dp, CircleShape)
                     .clip(CircleShape)
-                    .background(Color(0xFFE67E22)) // Crust color
-                    .border(8.dp, Color(0xFFD35400), CircleShape)
+                    .background(crustColor)
+                    .border(8.dp, crustColor.copy(alpha = 0.8f), CircleShape)
             )
         }
 
@@ -253,7 +264,7 @@ fun PizzaPreview(uiState: PizzaBuilderUiState) {
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                Color(0xFFF1C40F).copy(alpha = 0.8f),
+                                Color(0xFFF1C40F).copy(alpha = 0.85f),
                                 Color(0xFFF1C40F).copy(alpha = 0.4f)
                             )
                         )
@@ -307,16 +318,30 @@ fun AnimatedTopping(topping: Topping, position: Pair<Float, Float>) {
         modifier = Modifier.fillMaxSize()
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Text(
-                text = topping.emoji,
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .offset(
-                        x = (300 * (position.first - 0.5f)).dp,
-                        y = (300 * (position.second - 0.5f)).dp
-                    )
-            )
+            if (topping.imageRes != null) {
+                Image(
+                    painter = painterResource(id = topping.imageRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .align(Alignment.Center)
+                        .offset(
+                            x = (300 * (position.first - 0.5f)).dp,
+                            y = (300 * (position.second - 0.5f)).dp
+                        )
+                )
+            } else {
+                Text(
+                    text = topping.emoji,
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .offset(
+                            x = (300 * (position.first - 0.5f)).dp,
+                            y = (300 * (position.second - 0.5f)).dp
+                        )
+                )
+            }
         }
     }
 }
@@ -338,9 +363,9 @@ fun StepProgressIndicator(currentStep: PizzaBuilderStep, modifier: Modifier = Mo
                         .size(24.dp)
                         .clip(CircleShape)
                         .background(
-                            if (isCompleted) Color.Green.copy(alpha = 0.8f)
+                            if (isCompleted) Color(0xFF4CAF50)
                             else if (isCurrent) OrangeAccent
-                            else Color.LightGray
+                            else Color.LightGray.copy(alpha = 0.5f)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -364,11 +389,189 @@ fun StepProgressIndicator(currentStep: PizzaBuilderStep, modifier: Modifier = Mo
                         .weight(1f)
                         .height(2.dp)
                         .padding(horizontal = 4.dp)
-                        .background(if (isCompleted) Color.Green.copy(alpha = 0.5f) else Color.LightGray)
+                        .background(if (isCompleted) Color(0xFF4CAF50).copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.3f))
                 )
             }
         }
     }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun <T> InfiniteHorizontalSelector(
+    items: List<T>,
+    selected: T?,
+    onSelect: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    cardContent: @Composable (T, Boolean) -> Unit
+) {
+    if (items.isEmpty()) return
+
+    val startIndex = items.indexOf(selected).coerceAtLeast(0)
+    val initialPage = 1000 * items.size + startIndex
+    val pagerState = rememberPagerState(
+        initialPage = initialPage,
+        pageCount = { Int.MAX_VALUE }
+    )
+
+    LaunchedEffect(pagerState.currentPage) {
+        val actualIndex = pagerState.currentPage % items.size
+        val targetItem = items[actualIndex]
+        if (targetItem != selected) {
+            onSelect(targetItem)
+        }
+    }
+
+    LaunchedEffect(selected) {
+        val actualIndex = pagerState.currentPage % items.size
+        if (items[actualIndex] != selected) {
+            val targetIndex = items.indexOf(selected).coerceAtLeast(0)
+            val currentPageGroup = pagerState.currentPage / items.size
+            val targetPage = currentPageGroup * items.size + targetIndex
+            pagerState.scrollToPage(targetPage)
+        }
+    }
+
+    Box(modifier = modifier.fillMaxWidth()) {
+        HorizontalPager(
+            state = pagerState,
+            contentPadding = PaddingValues(horizontal = 115.dp),
+            pageSpacing = 0.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) { page ->
+            val actualIndex = page % items.size
+            val item = items[actualIndex]
+            val isSelected = item == selected
+
+            val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
+            val scale = 0.75f + 0.25f * (1f - pageOffset.coerceIn(0f, 1f))
+            val alpha = 0.3f + 0.7f * (1f - pageOffset.coerceIn(0f, 1f))
+            val rotation = 12f * (pagerState.currentPageOffsetFraction + (pagerState.currentPage - page))
+
+            Box(
+                modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        this.alpha = alpha
+                        rotationY = -rotation * 1.5f
+                        cameraDistance = 10f
+                    }
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                cardContent(item, isSelected)
+            }
+        }
+        
+        // Edge Fade Effect
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        0f to BackgroundWhite,
+                        0.15f to Color.Transparent,
+                        0.85f to Color.Transparent,
+                        1f to BackgroundWhite
+                    )
+                )
+        )
+    }
+}
+
+@Composable
+fun CarouselOptionCard(
+    emoji: String,
+    title: String,
+    subtitle: String,
+    price: String,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val animBg by animateColorAsState(if (isSelected) OrangeAccent else Color.White, label = "card_bg")
+    val animContent by animateColorAsState(if (isSelected) Color.White else TextPrimary, label = "card_content")
+    
+    Surface(
+        modifier = modifier
+            .width(130.dp)
+            .height(150.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = animBg,
+        shadowElevation = if (isSelected) 10.dp else 2.dp,
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(if (isSelected) Color.White.copy(alpha = 0.2f) else CardBackground)
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = emoji, fontSize = 28.sp)
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Black,
+                color = animContent,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                letterSpacing = (-0.5).sp
+            )
+            Text(
+                text = price,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = if (isSelected) Color.White.copy(alpha = 0.9f) else OrangeAccent
+            )
+        }
+    }
+}
+
+private fun getCrustEmoji(crustId: String): String = when (crustId) {
+    "c1" -> "🍞"
+    "c2" -> "🍕"
+    "c3" -> "🧀"
+    "c4" -> "🌾"
+    "c5" -> "🥖"
+    else -> "🍞"
+}
+
+private fun getSauceEmoji(sauceId: String): String = when (sauceId) {
+    "s1" -> "🍅"
+    "s2" -> "🌶️"
+    "s3" -> "🧄"
+    "s4" -> "🍯"
+    "s5" -> "🌿"
+    else -> "🍅"
+}
+
+private fun getCheeseEmoji(cheeseId: String): String = when (cheeseId) {
+    "ch1" -> "🧀"
+    "ch2" -> "🧀"
+    "ch3" -> "🧈"
+    "ch4" -> "🥛"
+    else -> "🧀"
+}
+
+private fun getSizeEmoji(size: PizzaSize): String = when (size) {
+    PizzaSize.SMALL -> "🍕"
+    PizzaSize.MEDIUM -> "🍕"
+    PizzaSize.LARGE -> "🍕"
 }
 
 @Composable
@@ -376,15 +579,19 @@ fun CrustSelection(selected: Crust?, options: List<Crust>, onSelect: (Crust) -> 
     Column {
         Text("Choose Your Crust", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
-        options.forEach { crust ->
-            OptionCard(
+        
+        InfiniteHorizontalSelector(
+            items = options,
+            selected = selected,
+            onSelect = onSelect
+        ) { crust, isSelected ->
+            CarouselOptionCard(
+                emoji = getCrustEmoji(crust.id),
                 title = crust.name,
                 subtitle = crust.description,
                 price = if (crust.price > 0) "+$${crust.price}" else "Free",
-                isSelected = selected?.id == crust.id,
-                onClick = { onSelect(crust) }
+                isSelected = isSelected
             )
-            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
@@ -394,15 +601,19 @@ fun SauceSelection(selected: Sauce?, options: List<Sauce>, onSelect: (Sauce) -> 
     Column {
         Text("Choose Your Sauce", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
-        options.forEach { sauce ->
-            OptionCard(
+
+        InfiniteHorizontalSelector(
+            items = options,
+            selected = selected,
+            onSelect = onSelect
+        ) { sauce, isSelected ->
+            CarouselOptionCard(
+                emoji = getSauceEmoji(sauce.id),
                 title = sauce.name,
                 subtitle = "Premium sauce base",
                 price = if (sauce.price > 0) "+$${sauce.price}" else "Free",
-                isSelected = selected?.id == sauce.id,
-                onClick = { onSelect(sauce) }
+                isSelected = isSelected
             )
-            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
@@ -412,15 +623,19 @@ fun CheeseSelection(selected: Cheese?, options: List<Cheese>, onSelect: (Cheese)
     Column {
         Text("Pick Your Cheese", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
-        options.forEach { cheese ->
-            OptionCard(
+
+        InfiniteHorizontalSelector(
+            items = options,
+            selected = selected,
+            onSelect = onSelect
+        ) { cheese, isSelected ->
+            CarouselOptionCard(
+                emoji = getCheeseEmoji(cheese.id),
                 title = cheese.name,
                 subtitle = "Freshly grated",
                 price = if (cheese.price > 0) "+$${cheese.price}" else "Free",
-                isSelected = selected?.id == cheese.id,
-                onClick = { onSelect(cheese) }
+                isSelected = isSelected
             )
-            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
@@ -453,7 +668,6 @@ fun ToppingsSelection(selected: List<Topping>, options: List<Topping>, onToggle:
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Grid-like layout for toppings
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             mainAxisSpacing = 8.dp,
@@ -476,18 +690,19 @@ fun SizeSelection(selected: PizzaSize, onSelect: (PizzaSize) -> Unit) {
     Column {
         Text("Choose Your Size", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            PizzaSize.entries.forEach { size ->
-                SizeCard(
-                    size = size,
-                    isSelected = selected == size,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onSelect(size) }
-                )
-            }
+
+        InfiniteHorizontalSelector(
+            items = PizzaSize.entries,
+            selected = selected,
+            onSelect = onSelect
+        ) { size, isSelected ->
+            CarouselOptionCard(
+                emoji = getSizeEmoji(size),
+                title = size.label + " Size",
+                subtitle = "${size.inches}\" Pizza base",
+                price = if (size.priceModifier > 0) "+$${size.priceModifier}" else "Free",
+                isSelected = isSelected
+            )
         }
     }
 }
@@ -524,31 +739,6 @@ fun ReviewItem(label: String, value: String) {
 }
 
 @Composable
-fun OptionCard(title: String, subtitle: String, price: String, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) OrangeAccent.copy(alpha = 0.05f) else Color.White,
-        border = BorderStroke(1.dp, if (isSelected) OrangeAccent else Color.LightGray.copy(alpha = 0.5f))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(selected = isSelected, onClick = onClick, colors = RadioButtonDefaults.colors(selectedColor = OrangeAccent))
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontWeight = FontWeight.Bold, color = TextPrimary)
-                Text(subtitle, fontSize = 12.sp, color = TextSecondary)
-            }
-            Text(price, fontWeight = FontWeight.Bold, color = if (isSelected) OrangeAccent else TextHint)
-        }
-    }
-}
-
-@Composable
 fun ToppingChip(topping: Topping, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         modifier = Modifier.clickable(onClick = onClick),
@@ -561,7 +751,15 @@ fun ToppingChip(topping: Topping, isSelected: Boolean, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(topping.emoji)
+            if (topping.imageRes != null) {
+                Image(
+                    painter = painterResource(id = topping.imageRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            } else {
+                Text(topping.emoji)
+            }
             Text(
                 topping.name,
                 color = if (isSelected) Color.White else TextPrimary,
@@ -573,48 +771,23 @@ fun ToppingChip(topping: Topping, isSelected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-fun SizeCard(size: PizzaSize, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Surface(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) OrangeAccent else Color.White,
-        border = BorderStroke(1.dp, if (isSelected) OrangeAccent else Color.LightGray.copy(alpha = 0.5f))
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                size.label,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Black,
-                color = if (isSelected) Color.White else TextPrimary
-            )
-            Text(
-                "${size.inches}\"",
-                fontSize = 12.sp,
-                color = if (isSelected) Color.White.copy(alpha = 0.8f) else TextSecondary
-            )
-        }
-    }
-}
-
-@Composable
 fun PizzaBuilderBottomBar(uiState: PizzaBuilderUiState, onNext: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
-        shadowElevation = 16.dp
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .fillMaxWidth(),
+        color = Color.White.copy(alpha = 0.95f),
+        shape = RoundedCornerShape(28.dp),
+        shadowElevation = 12.dp
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 24.dp, vertical = 20.dp)
-                .navigationBarsPadding(),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Your Pizza", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+                Text("Current Price", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
                 AnimatedContent(
                     targetState = uiState.totalPrice,
                     transitionSpec = {
@@ -624,7 +797,7 @@ fun PizzaBuilderBottomBar(uiState: PizzaBuilderUiState, onNext: () -> Unit) {
                 ) { price ->
                     Text(
                         "$${String.format(Locale.US, "%.2f", price)}",
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Black,
                         color = OrangeAccent
                     )
@@ -633,9 +806,10 @@ fun PizzaBuilderBottomBar(uiState: PizzaBuilderUiState, onNext: () -> Unit) {
             
             Button(
                 onClick = onNext,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = OrangeAccent),
-                modifier = Modifier.height(56.dp)
+                modifier = Modifier.height(52.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
                 Text(
                     when (uiState.currentStep) {
@@ -647,7 +821,7 @@ fun PizzaBuilderBottomBar(uiState: PizzaBuilderUiState, onNext: () -> Unit) {
                         PizzaBuilderStep.REVIEW -> "Add to Cart"
                     },
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    fontSize = 14.sp
                 )
             }
         }

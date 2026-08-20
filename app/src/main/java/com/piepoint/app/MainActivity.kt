@@ -99,13 +99,14 @@ fun PiePointApp() {
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            containerColor = BackgroundWhite
+            containerColor = Color.Transparent,
+            contentWindowInsets = WindowInsets(0.dp)
         ) { paddingValues ->
-            val navBarHeight = if (showBottomNav) 110.dp else 0.dp
             Box(
                 modifier = Modifier
+                    .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(bottom = navBarHeight)
+                    .background(BackgroundWhite) // Set background here
             ) {
                 PizzaNavGraph(
                     navController = navController,
@@ -313,21 +314,28 @@ private fun buildSmoothNotchPath(
         val notchHalfWidth = notchWidth / 2f
         val start = notchCx - notchHalfWidth
         val end = notchCx + notchHalfWidth
-        val controlOffset = notchWidth * 0.25f
+        
+        // Fluid Bell Curve shoulders
+        val shoulderOffset = notchWidth * 0.35f 
 
-        moveTo(start, -1f)
+        moveTo(start - 20f, -1f) // Overlap for clean subtraction
         lineTo(start, 0f)
+        
+        // Entry Shoulder
         cubicTo(
-            x1 = start + controlOffset, y1 = 0f,
-            x2 = notchCx - controlOffset, y2 = notchHeight,
+            x1 = start + shoulderOffset, y1 = 0f,
+            x2 = notchCx - (notchWidth * 0.15f), y2 = notchHeight,
             x3 = notchCx, y3 = notchHeight
         )
+        
+        // Exit Shoulder
         cubicTo(
-            x1 = notchCx + controlOffset, y1 = notchHeight,
-            x2 = end - controlOffset, y2 = 0f,
+            x1 = notchCx + (notchWidth * 0.15f), y1 = notchHeight,
+            x2 = end - shoulderOffset, y2 = 0f,
             x3 = end, y3 = 0f
         )
-        lineTo(end, -1f)
+        
+        lineTo(end + 20f, -1f)
         close()
     }
 

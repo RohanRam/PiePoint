@@ -1,8 +1,10 @@
-- `[x]` Redesign Navigation Bar to match reference
-    - `[x]` Implement Smooth Bezier Notch Path in `MainActivity.kt`
-    - `[x]` Add Floating Active Circle (FAB style)
-    - `[x]` Refine typography and icon styling
-    - `[x]` Update slide animations for the new notch shape
-- `[x]` Verification
-    - `[x]` Build project
-    - `[x]` Manual visual check on emulator
+- `[/]` Refine Pizza Builder UI
+    - `[ ]` Update `PizzaPreview` to react to crust, sauce, and cheese selections
+    - `[ ]` Shrink horizontal selector and improve "peek" visibility
+    - `[ ]` Enhance carousel 3D animations and aesthetics
+- `[/]` Fix Layout and Navbar Depth
+    - `[ ]` Add bottom padding to clear the custom navbar
+    - `[ ]` Optimize navbar layering in `MainActivity.kt`
+- `[ ]` Verification
+    - `[ ]` Final build and run
+    - `[ ]` Manual check of interactivity and visibility
