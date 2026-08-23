@@ -346,20 +346,10 @@ fun PizzaDetailScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-                GradientButton(
-                    text = "Add to Cart",
-                    onClick = {
-                        cartViewModel.addToCart(pizza, uiState.selectedSize, uiState.selectedToppings)
-                        showAddedSnackbar = true
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                )
-
-                Spacer(modifier = Modifier.height(120.dp))
+                // Bottom spacing so content isn't hidden behind floating bar
+                Spacer(modifier = Modifier.height(140.dp))
             }
         }
 
@@ -414,12 +404,69 @@ fun PizzaDetailScreen(
             }
         }
 
+        // ── Floating Bottom Action Buttons (No background — true 3D float) ──
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Go to Cart — always visible
+            Button(
+                onClick = onCartClick,
+                modifier = Modifier
+                    .height(56.dp)
+                    .shadow(16.dp, RoundedCornerShape(18.dp), spotColor = TextPrimary.copy(alpha = 0.3f)),
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = TextPrimary
+                ),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 8.dp,
+                    pressedElevation = 2.dp
+                )
+            ) {
+                Icon(
+                    Icons.Rounded.ShoppingCart,
+                    contentDescription = "Go to Cart",
+                    modifier = Modifier.size(20.dp),
+                    tint = OrangeAccent
+                )
+                if (cartItemCount > 0) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "$cartItemCount",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 14.sp,
+                        color = OrangeAccent
+                    )
+                }
+            }
+
+            // Add to Cart — floating gradient pill
+            GradientButton(
+                text = "Add to Cart",
+                onClick = {
+                    cartViewModel.addToCart(pizza, uiState.selectedSize, uiState.selectedToppings)
+                    showAddedSnackbar = true
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .shadow(20.dp, RoundedCornerShape(18.dp), spotColor = OrangeAccent.copy(alpha = 0.4f))
+            )
+        }
+
         // Modern Snackbar
         AnimatedVisibility(
             visible = showAddedSnackbar,
             enter = slideInVertically { it } + fadeIn(),
             exit = slideOutVertically { it } + fadeOut(),
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 100.dp)
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 140.dp)
         ) {
             LaunchedEffect(showAddedSnackbar) {
                 if (showAddedSnackbar) {
