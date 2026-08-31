@@ -166,7 +166,8 @@ fun PizzaBuilderScreen(
                         PizzaBuilderStep.TOPPINGS -> ToppingsSelection(
                             selected = uiState.selectedToppings,
                             options = viewModel.availableToppings,
-                            onToggle = viewModel::toggleTopping
+                            onIncrement = viewModel::incrementTopping,
+                            onDecrement = viewModel::decrementTopping
                         )
                         PizzaBuilderStep.SIZE -> SizeSelection(
                             selected = uiState.selectedSize,
@@ -284,7 +285,7 @@ fun PizzaPreview(uiState: PizzaBuilderUiState) {
         }
 
         // 4. Toppings Layer
-        ToppingsLayer(selectedToppings = uiState.selectedToppings)
+        ToppingsLayer(selectedToppings = uiState.selectedToppings.keys.toList())
     }
 }
 
@@ -652,7 +653,13 @@ fun CheeseSelection(selected: Cheese?, options: List<Cheese>, onSelect: (Cheese)
 }
 
 @Composable
-fun ToppingsSelection(selected: List<Topping>, options: List<Topping>, onToggle: (Topping) -> Unit) {
+fun ToppingsSelection(
+    selected: Map<Topping, Int>,
+    options: List<Topping>,
+    onIncrement: (Topping) -> Unit,
+    onDecrement: (Topping) -> Unit
+) {
+    val totalItems = selected.values.sum()
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -661,14 +668,14 @@ fun ToppingsSelection(selected: List<Topping>, options: List<Topping>, onToggle:
         ) {
             Column {
                 Text("Load It Up", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Choose your favorite toppings", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                Text("Tap + to add, go up to 3x extra!", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
             }
             Surface(
                 color = OrangeAccent.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    "${selected.size} selected",
+                    "$totalItems added",
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     color = OrangeAccent,
                     fontWeight = FontWeight.Bold,
@@ -679,17 +686,16 @@ fun ToppingsSelection(selected: List<Topping>, options: List<Topping>, onToggle:
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            mainAxisSpacing = 8.dp,
-            crossAxisSpacing = 8.dp
+        Column(
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             options.forEach { topping ->
-                val isSelected = selected.any { it.id == topping.id }
-                ToppingChip(
+                val quantity = selected[topping] ?: 0
+                ToppingRow(
                     topping = topping,
-                    isSelected = isSelected,
-                    onClick = { onToggle(topping) }
+                    quantity = quantity,
+                    onIncrement = { onIncrement(topping) },
+                    onDecrement = { onDecrement(topping) }
                 )
             }
         }
@@ -736,7 +742,13 @@ fun ReviewSelection(uiState: PizzaBuilderUiState, onEdit: () -> Unit) {
         ReviewItem("Crust", uiState.selectedCrust?.name ?: "None")
         ReviewItem("Sauce", uiState.selectedSauce?.name ?: "None")
         ReviewItem("Cheese", uiState.selectedCheese?.name ?: "None")
-        ReviewItem("Toppings", if (uiState.selectedToppings.isEmpty()) "None" else uiState.selectedToppings.joinToString { it.name })
+        ReviewItem(
+            "Toppings",
+            if (uiState.selectedToppings.isEmpty()) "None"
+            else uiState.selectedToppings.entries.joinToString { (topping, qty) ->
+                if (qty > 1) "${topping.name} x$qty" else topping.name
+            }
+        )
         ReviewItem("Size", uiState.selectedSize.label + " - " + uiState.selectedSize.inches + "\"")
     }
 }
@@ -750,33 +762,151 @@ fun ReviewItem(label: String, value: String) {
 }
 
 @Composable
-fun ToppingChip(topping: Topping, isSelected: Boolean, onClick: () -> Unit) {
+fun ToppingRow(
+    topping: Topping,
+    quantity: Int,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit
+) {
+    val isSelected = quantity > 0
+    val borderColor by animateColorAsState(
+        if (isSelected) OrangeAccent else Color.LightGray.copy(alpha = 0.4f),
+        label = "topping_border"
+    )
+    val bgColor by animateColorAsState(
+        if (isSelected) OrangeAccent.copy(alpha = 0.06f) else Color.White,
+        label = "topping_bg"
+    )
+
     Surface(
-        modifier = Modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) OrangeAccent else Color.White,
-        border = BorderStroke(1.dp, if (isSelected) OrangeAccent else Color.LightGray.copy(alpha = 0.5f))
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = bgColor,
+        border = BorderStroke(1.5.dp, borderColor),
+        shadowElevation = if (isSelected) 4.dp else 0.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (topping.imageRes != null) {
-                Image(
-                    painter = painterResource(id = topping.imageRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-            } else {
-                Text(topping.emoji)
+            // Emoji / Image
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isSelected) OrangeAccent.copy(alpha = 0.15f) else CardBackground),
+                contentAlignment = Alignment.Center
+            ) {
+                if (topping.imageRes != null) {
+                    Image(
+                        painter = painterResource(id = topping.imageRes),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text(topping.emoji, fontSize = 20.sp)
+                }
             }
-            Text(
-                topping.name,
-                color = if (isSelected) Color.White else TextPrimary,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                fontSize = 12.sp
-            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Name & Price
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    topping.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    color = TextPrimary
+                )
+                Text(
+                    "+$${String.format(java.util.Locale.US, "%.2f", topping.price)} each",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextSecondary
+                )
+            }
+
+            // Quantity Stepper
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // Minus Button
+                AnimatedVisibility(
+                    visible = isSelected,
+                    enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.5f),
+                    exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.5f)
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable(onClick = onDecrement),
+                        shape = CircleShape,
+                        color = Color(0xFFFFF0E6),
+                        border = BorderStroke(1.dp, OrangeAccent.copy(alpha = 0.3f))
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Rounded.Remove,
+                                contentDescription = "Decrease ${topping.name}",
+                                tint = OrangeAccent,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Quantity Badge
+                AnimatedVisibility(
+                    visible = isSelected,
+                    enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.5f),
+                    exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.5f)
+                ) {
+                    AnimatedContent(
+                        targetState = quantity,
+                        transitionSpec = {
+                            (slideInVertically { -it } + fadeIn()) togetherWith
+                                    (slideOutVertically { it } + fadeOut())
+                        },
+                        label = "qty_anim"
+                    ) { qty ->
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(OrangeAccent),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "$qty",
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+
+                // Plus Button
+                Surface(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable(onClick = onIncrement),
+                    shape = CircleShape,
+                    color = if (isSelected) OrangeAccent else Color(0xFFFFF0E6),
+                    border = BorderStroke(1.dp, OrangeAccent.copy(alpha = if (isSelected) 1f else 0.3f))
+                ) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Icon(
+                            Icons.Rounded.Add,
+                            contentDescription = "Increase ${topping.name}",
+                            tint = if (isSelected) Color.White else OrangeAccent,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -839,18 +969,4 @@ fun PizzaBuilderBottomBar(uiState: PizzaBuilderUiState, onNext: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun FlowRow(
-    modifier: Modifier = Modifier,
-    mainAxisSpacing: Dp = 0.dp,
-    crossAxisSpacing: Dp = 0.dp,
-    content: @Composable () -> Unit
-) {
-    FlowRow(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(mainAxisSpacing),
-        verticalArrangement = Arrangement.spacedBy(crossAxisSpacing),
-        content = { content() }
-    )
-}
+

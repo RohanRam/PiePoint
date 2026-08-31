@@ -14,7 +14,7 @@ data class PizzaBuilderUiState(
     val selectedCrust: Crust? = null,
     val selectedSauce: Sauce? = null,
     val selectedCheese: Cheese? = null,
-    val selectedToppings: List<Topping> = emptyList(),
+    val selectedToppings: Map<Topping, Int> = emptyMap(),
     val selectedSize: PizzaSize = PizzaSize.MEDIUM,
     val isAddingToCart: Boolean = false
 ) {
@@ -24,7 +24,13 @@ data class PizzaBuilderUiState(
             val componentsPrice = (selectedCrust?.price ?: 0.0) +
                     (selectedSauce?.price ?: 0.0) +
                     (selectedCheese?.price ?: 0.0) +
-                    selectedToppings.sumOf { it.price }
+                    selectedToppings.entries.sumOf { (topping, qty) -> topping.price * qty }
             return base + selectedSize.priceModifier + componentsPrice
+        }
+
+    /** Flatten the map to a list (repeating toppings by quantity) for cart compatibility */
+    val selectedToppingsList: List<Topping>
+        get() = selectedToppings.flatMap { (topping, qty) ->
+            List(qty) { topping }
         }
 }

@@ -24,6 +24,10 @@ class PizzaBuilderViewModel(
     val availableCheeses = MockDataProvider.cheeses
     val availableToppings = MockDataProvider.toppings
 
+    companion object {
+        const val MAX_TOPPING_QTY = 3
+    }
+
     fun selectCrust(crust: Crust) {
         _uiState.update { it.copy(selectedCrust = crust) }
     }
@@ -38,10 +42,35 @@ class PizzaBuilderViewModel(
 
     fun toggleTopping(topping: Topping) {
         _uiState.update { state ->
-            val toppings = if (state.selectedToppings.contains(topping)) {
-                state.selectedToppings.filter { it.id != topping.id }
+            val toppings = state.selectedToppings.toMutableMap()
+            if (toppings.containsKey(topping)) {
+                toppings.remove(topping)
             } else {
-                state.selectedToppings + topping
+                toppings[topping] = 1
+            }
+            state.copy(selectedToppings = toppings)
+        }
+    }
+
+    fun incrementTopping(topping: Topping) {
+        _uiState.update { state ->
+            val toppings = state.selectedToppings.toMutableMap()
+            val current = toppings[topping] ?: 0
+            if (current < MAX_TOPPING_QTY) {
+                toppings[topping] = current + 1
+            }
+            state.copy(selectedToppings = toppings)
+        }
+    }
+
+    fun decrementTopping(topping: Topping) {
+        _uiState.update { state ->
+            val toppings = state.selectedToppings.toMutableMap()
+            val current = toppings[topping] ?: 0
+            if (current <= 1) {
+                toppings.remove(topping)
+            } else {
+                toppings[topping] = current - 1
             }
             state.copy(selectedToppings = toppings)
         }
@@ -96,10 +125,11 @@ class PizzaBuilderViewModel(
             isCustom = true
         )
 
+        // Flatten the topping map to a list for cart compatibility
         cartViewModel.addToCart(
             pizza = customPizza,
             size = state.selectedSize,
-            toppings = state.selectedToppings,
+            toppings = state.selectedToppingsList,
             crust = state.selectedCrust,
             sauce = state.selectedSauce,
             cheese = state.selectedCheese
