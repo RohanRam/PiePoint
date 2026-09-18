@@ -167,7 +167,8 @@ fun PizzaBuilderScreen(
                             selected = uiState.selectedToppings,
                             options = viewModel.availableToppings,
                             onIncrement = viewModel::incrementTopping,
-                            onDecrement = viewModel::decrementTopping
+                            onDecrement = viewModel::decrementTopping,
+                            onClearAll = viewModel::clearToppings
                         )
                         PizzaBuilderStep.SIZE -> SizeSelection(
                             selected = uiState.selectedSize,
@@ -652,15 +653,27 @@ fun CheeseSelection(selected: Cheese?, options: List<Cheese>, onSelect: (Cheese)
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ToppingsSelection(
     selected: Map<Topping, Int>,
     options: List<Topping>,
     onIncrement: (Topping) -> Unit,
-    onDecrement: (Topping) -> Unit
+    onDecrement: (Topping) -> Unit,
+    onClearAll: () -> Unit
 ) {
     val totalItems = selected.values.sum()
+
+    // Infinite horizontal pager for toppings
+    val startIndex = 0
+    val initialPage = 1000 * options.size + startIndex
+    val pagerState = rememberPagerState(
+        initialPage = initialPage,
+        pageCount = { if (options.isEmpty()) 1 else Int.MAX_VALUE }
+    )
+
     Column {
+        // Header row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -668,35 +681,164 @@ fun ToppingsSelection(
         ) {
             Column {
                 Text("Load It Up", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Tap + to add, go up to 3x extra!", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                Text("Swipe left/right · tap + to add, up to 3x!", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
             }
-            Surface(
-                color = OrangeAccent.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(8.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(
-                    "$totalItems added",
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    color = OrangeAccent,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp
-                )
+                AnimatedVisibility(
+                    visible = selected.isNotEmpty(),
+                    enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.8f),
+                    exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.8f)
+                ) {
+                    TextButton(
+                        onClick = onClearAll,
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            "Clear All",
+                            color = OrangeAccent,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                Surface(
+                    color = OrangeAccent.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        "$totalItems added",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = OrangeAccent,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
-        Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            options.forEach { topping ->
-                val quantity = selected[topping] ?: 0
-                ToppingRow(
-                    topping = topping,
-                    quantity = quantity,
-                    onIncrement = { onIncrement(topping) },
-                    onDecrement = { onDecrement(topping) }
+
+        // Horizontal pager carousel
+        if (options.isNotEmpty()) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                HorizontalPager(
+                    state = pagerState,
+                    contentPadding = PaddingValues(horizontal = 115.dp),
+                    pageSpacing = 0.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(185.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) { page ->
+                    val actualIndex = page % options.size
+                    val topping = options[actualIndex]
+                    val quantity = selected[topping] ?: 0
+                    val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
+                    val scale = 0.85f + 0.15f * (1f - pageOffset.coerceIn(0f, 1f))
+                    val alpha = 0.5f + 0.5f * (1f - pageOffset.coerceIn(0f, 1f))
+
+                    Box(
+                        modifier = Modifier
+                            .graphicsLayer {
+                                scaleX = scale
+                                scaleY = scale
+                                this.alpha = alpha
+                            }
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ToppingCard(
+                            topping = topping,
+                            quantity = quantity,
+                            onIncrement = { onIncrement(topping) },
+                            onDecrement = { onDecrement(topping) }
+                        )
+                    }
+                }
+
+                // Edge fade overlays
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(185.dp)
+                        .background(
+                            Brush.horizontalGradient(
+                                0f to BackgroundWhite,
+                                0.15f to Color.Transparent,
+                                0.85f to Color.Transparent,
+                                1f to BackgroundWhite
+                            )
+                        )
                 )
+            }
+
+            // Page indicator dots
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val currentActual = pagerState.currentPage % options.size
+                options.forEachIndexed { index, topping ->
+                    val isActive = index == currentActual
+                    val hasQty = (selected[topping] ?: 0) > 0
+                    val dotColor by animateColorAsState(
+                        when {
+                            isActive -> OrangeAccent
+                            hasQty -> OrangeAccent.copy(alpha = 0.5f)
+                            else -> Color.LightGray.copy(alpha = 0.4f)
+                        },
+                        label = "dot_color_$index"
+                    )
+                    val dotSize by animateDpAsState(
+                        if (isActive) 8.dp else 5.dp,
+                        label = "dot_size_$index"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 3.dp)
+                            .size(dotSize)
+                            .clip(CircleShape)
+                            .background(dotColor)
+                    )
+                }
+            }
+        }
+
+        // Selected toppings summary chips
+        if (selected.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                selected.entries.forEach { (topping, qty) ->
+                    Surface(
+                        color = OrangeAccent.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(20.dp),
+                        border = BorderStroke(1.dp, OrangeAccent.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(topping.emoji, fontSize = 14.sp)
+                            Text(
+                                if (qty > 1) "${topping.name} x$qty" else topping.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = OrangeAccent
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -758,6 +900,160 @@ fun ReviewItem(label: String, value: String) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextHint, fontWeight = FontWeight.Bold)
         Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+fun ToppingCard(
+    topping: Topping,
+    quantity: Int,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit
+) {
+    val isSelected = quantity > 0
+    val animBg by animateColorAsState(
+        if (isSelected) OrangeAccent else Color.White,
+        label = "tc_bg"
+    )
+    val animContent by animateColorAsState(
+        if (isSelected) Color.White else TextPrimary,
+        label = "tc_content"
+    )
+
+    Surface(
+        modifier = Modifier
+            .width(130.dp)
+            .height(158.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = animBg,
+        shadowElevation = if (isSelected) 10.dp else 2.dp,
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Emoji / image in a circle
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(if (isSelected) Color.White.copy(alpha = 0.2f) else CardBackground)
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (topping.imageRes != null) {
+                    Image(
+                        painter = painterResource(id = topping.imageRes),
+                        contentDescription = null,
+                        modifier = Modifier.size(28.dp)
+                    )
+                } else {
+                    Text(topping.emoji, fontSize = 28.sp)
+                }
+            }
+
+            // Name & price
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    topping.name,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Black,
+                    color = animContent,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    letterSpacing = (-0.5).sp
+                )
+                Text(
+                    "+$${String.format(java.util.Locale.US, "%.2f", topping.price)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (isSelected) Color.White.copy(alpha = 0.9f) else OrangeAccent,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // Stepper: − qty +
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // Minus button
+                AnimatedVisibility(
+                    visible = isSelected,
+                    enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.5f),
+                    exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.5f)
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clickable(onClick = onDecrement),
+                        shape = CircleShape,
+                        color = Color.White.copy(alpha = 0.25f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Rounded.Remove,
+                                contentDescription = "Decrease ${topping.name}",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Quantity badge
+                AnimatedVisibility(
+                    visible = isSelected,
+                    enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.5f),
+                    exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.5f)
+                ) {
+                    AnimatedContent(
+                        targetState = quantity,
+                        transitionSpec = {
+                            (slideInVertically { -it } + fadeIn()) togetherWith
+                                    (slideOutVertically { it } + fadeOut())
+                        },
+                        label = "tc_qty_anim"
+                    ) { qty ->
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.3f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "$qty",
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+                }
+
+                // Plus button
+                Surface(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clickable(onClick = onIncrement),
+                    shape = CircleShape,
+                    color = if (isSelected) Color.White.copy(alpha = 0.25f) else Color(0xFFFFF0E6)
+                ) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Icon(
+                            Icons.Rounded.Add,
+                            contentDescription = "Increase ${topping.name}",
+                            tint = if (isSelected) Color.White else OrangeAccent,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

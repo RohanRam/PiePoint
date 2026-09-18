@@ -76,6 +76,11 @@ class PizzaBuilderViewModel(
         }
     }
 
+    fun clearToppings() {
+        _uiState.update { it.copy(selectedToppings = emptyMap()) }
+    }
+
+
     fun selectSize(size: PizzaSize) {
         _uiState.update { it.copy(selectedSize = size) }
     }
