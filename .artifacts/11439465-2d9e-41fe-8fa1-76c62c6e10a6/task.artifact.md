@@ -1,0 +1,5 @@
+- [x] Add `Screen.Splash` to `NavRoutes.kt`
+- [x] Implement `SplashScreen.kt` with animations
+- [x] Integrate `SplashScreen` into `NavGraph.kt`
+- [x] Update `MainActivity.kt` to hide bottom nav on splash screen
+- [x] Verify transition and animations
