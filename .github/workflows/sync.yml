@@ -1,0 +1,22 @@
+name: Sync to Rohan's Repository
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone original repository
+        run: |
+          git clone --mirror https://github.com/devnath-p/PiePoint.git repo
+          cd repo
+
+          git remote set-url --push origin https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/RohanRam/PiePoint.git
+
+          git push --all --force
+          git push --tags --force
