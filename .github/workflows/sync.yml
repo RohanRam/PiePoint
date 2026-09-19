@@ -13,10 +13,11 @@ jobs:
     steps:
       - name: Clone original repository
         run: |
-          git clone --mirror https://github.com/devnath-p/PiePoint.git repo
+          git clone https://github.com/devnath-p/PiePoint.git repo
           cd repo
 
-          git remote set-url --push origin https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/RohanRam/PiePoint.git
+          git remote add backup https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/RohanRam/PiePoint.git
 
-          git push --all --force
-          git push --tags --force
+          git fetch --all --tags
+          git push backup --all --force
+          git push backup --tags --force
