@@ -1,5 +1,9 @@
-- [x] Add `Screen.Splash` to `NavRoutes.kt`
-- [x] Implement `SplashScreen.kt` with animations
-- [x] Integrate `SplashScreen` into `NavGraph.kt`
-- [x] Update `MainActivity.kt` to hide bottom nav on splash screen
-- [x] Verify transition and animations
+- [x] Research key features and code snippets
+- [x] Draft high-quality `README.md`
+    - [x] Project Title & Banner
+    - [x] Key Features list
+    - [x] Technical Stack details
+    - [x] "Cool Bits" (Custom animations & Canvas snippets)
+    - [x] Architecture overview
+- [x] Create `README.md` in root directory
+- [x] Verify content and formatting
