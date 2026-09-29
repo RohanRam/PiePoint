@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
 
 private val navIcons: Map<String, ImageVector> = mapOf(
     BottomNavItem.Create.route   to Icons.Rounded.AddCircleOutline,
-    BottomNavItem.Offers.route   to Icons.Rounded.LocalOffer,
+    BottomNavItem.AskPie.route   to Icons.Rounded.AutoAwesome,
     BottomNavItem.Menu.route     to Icons.Rounded.LocalPizza,
     BottomNavItem.Orders.route   to Icons.AutoMirrored.Rounded.ReceiptLong,
     BottomNavItem.Profile.route  to Icons.Rounded.Person
@@ -73,7 +73,7 @@ private val navIcons: Map<String, ImageVector> = mapOf(
 
 private val allNavItems = listOf(
     BottomNavItem.Create,
-    BottomNavItem.Offers,
+    BottomNavItem.AskPie,
     BottomNavItem.Menu,
     BottomNavItem.Orders,
     BottomNavItem.Profile
@@ -92,7 +92,7 @@ fun PiePointApp() {
     val bottomNavRoutes = setOf(
         Screen.Home.route,
         Screen.Create.route,
-        Screen.Offers.route,
+        Screen.AskPie.route,
         Screen.OrderHistory.route,
         Screen.Profile.route
     )
@@ -157,7 +157,7 @@ fun SleekNotchedNavBar(
     // Dynamic accent color per active tab (derived from PiePoint theme palette)
     val activeAccentColor = when (selectedIndex) {
         0 -> OrangeAccent       // Create
-        1 -> Color(0xFFFF6D00)  // Offers (Vibrant Deep Orange)
+        1 -> Color(0xFF7C3AED)  // Ask Pie (Magical AI Violet)
         2 -> Color(0xFFD84315)  // Menu (Rich Warm Rust)
         3 -> Color(0xFFE65100)  // Orders (Amber Gold)
         else -> OrangeAccent     // Profile

@@ -1,4 +1,4 @@
-﻿.gradle/
+.gradle/
 .idea/
 local.properties
 build/
@@ -6,3 +6,5 @@ build/
 .cxx/
 .externalNativeBuild/
 *.iml
+backend/.env
+backend/node_modules/

@@ -46,8 +46,16 @@ fun PizzaNavGraph(
             )
         }
 
-        composable(Screen.Offers.route) {
-            OffersScreen()
+        composable(Screen.AskPie.route) {
+            AiScreen(
+                cartViewModel = cartViewModel,
+                onNavigateToBuilder = {
+                    navController.navigate(Screen.Create.route)
+                },
+                onCartClick = {
+                    navController.navigate(Screen.Cart.route)
+                }
+            )
         }
 
         composable(Screen.Home.route) {

@@ -50,6 +50,19 @@ fun PizzaBuilderScreen(
     val uiState by viewModel.uiState.collectAsState()
     val cartItemCount by cartViewModel.cartItems.collectAsState()
 
+    LaunchedEffect(Unit) {
+        AiPizzaPrefill.pendingPizza?.let { pizza ->
+            viewModel.prefillFromAi(
+                crustId = pizza.crust.id,
+                sauceId = pizza.sauce.id,
+                cheeseId = pizza.cheese.id,
+                toppingIds = pizza.toppings.map { it.id },
+                sizeId = pizza.size.id
+            )
+            AiPizzaPrefill.pendingPizza = null
+        }
+    }
+
     BackHandler(enabled = uiState.currentStep != PizzaBuilderStep.CRUST) {
         viewModel.prevStep()
     }

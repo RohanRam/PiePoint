@@ -147,4 +147,36 @@ class PizzaBuilderViewModel(
             onComplete()
         }
     }
+
+    /**
+     * Prefill the builder with selections from an AI-generated pizza.
+     * Looks up real model objects by ID from MockDataProvider
+     * and jumps directly to the REVIEW step.
+     */
+    fun prefillFromAi(
+        crustId: String?,
+        sauceId: String?,
+        cheeseId: String?,
+        toppingIds: List<String>,
+        sizeId: String?
+    ) {
+        val crust = crustId?.let { id -> availableCrusts.find { it.id == id } }
+        val sauce = sauceId?.let { id -> availableSauces.find { it.id == id } }
+        val cheese = cheeseId?.let { id -> availableCheeses.find { it.id == id } }
+        val toppings = toppingIds
+            .mapNotNull { id -> availableToppings.find { it.id == id } }
+            .associateWith { 1 } // 1 of each topping
+        val size = sizeId?.let { id ->
+            PizzaSize.entries.find { it.name.equals(id, ignoreCase = true) }
+        } ?: PizzaSize.MEDIUM
+
+        _uiState.value = PizzaBuilderUiState(
+            currentStep = PizzaBuilderStep.REVIEW,
+            selectedCrust = crust,
+            selectedSauce = sauce,
+            selectedCheese = cheese,
+            selectedToppings = toppings,
+            selectedSize = size
+        )
+    }
 }
