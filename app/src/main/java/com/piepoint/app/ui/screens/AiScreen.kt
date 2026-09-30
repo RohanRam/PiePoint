@@ -53,10 +53,10 @@ private val quickChips = listOf(
 
 @Composable
 fun AiScreen(
+    viewModel: AiViewModel,
     cartViewModel: CartViewModel,
     onNavigateToBuilder: () -> Unit,
-    onCartClick: () -> Unit,
-    viewModel: AiViewModel = viewModel()
+    onCartClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }

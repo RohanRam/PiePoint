@@ -23,6 +23,7 @@ fun PizzaNavGraph(
     val detailViewModel: DetailViewModel = viewModel()
     val orderViewModel: OrderViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+    val aiViewModel: AiViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -48,6 +49,7 @@ fun PizzaNavGraph(
 
         composable(Screen.AskPie.route) {
             AiScreen(
+                viewModel = aiViewModel,
                 cartViewModel = cartViewModel,
                 onNavigateToBuilder = {
                     navController.navigate(Screen.Create.route)
