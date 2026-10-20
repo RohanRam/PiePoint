@@ -16,7 +16,7 @@ const menu = require('./menu.json');
 // ─── Config ──────────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 3000;
-const MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const MODEL = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b';
 const MAX_PROMPT_LENGTH = 500;
 const MAX_CHAT_MESSAGES = 50;
 const MAX_MESSAGE_LENGTH = 1000;
@@ -127,38 +127,52 @@ function stripCodeFences(text) {
 /**
  * Calls Groq chat.completions with response_format json_object and retries once if JSON fails to parse.
  */
-async function completeWithJsonRetry(messages, maxTokens = 512, temperature = 0.5) {
+async function completeWithJsonRetry(messages, maxTokens = 1024, temperature = 0.5) {
   let attempts = 0;
   while (attempts < 2) {
     attempts++;
-    const completion = await groq.chat.completions.create({
-      model: MODEL,
-      messages,
-      response_format: { type: 'json_object' },
-      max_tokens: maxTokens,
-      temperature,
-    });
-
-    const content = completion.choices?.[0]?.message?.content;
-    if (!content) {
-      if (attempts < 2) {
-        console.warn(`[groq] Empty response on attempt ${attempts}, retrying...`);
-        continue;
-      }
-      throw new Error('EMPTY_RESPONSE');
-    }
-
     try {
+      const completion = await groq.chat.completions.create({
+        model: MODEL,
+        messages,
+        response_format: { type: 'json_object' },
+        max_tokens: maxTokens,
+        temperature,
+      });
+
+      const content = completion.choices?.[0]?.message?.content;
+      if (!content) {
+        if (attempts < 2) {
+          console.warn(`[groq] Empty response on attempt ${attempts}, retrying...`);
+          continue;
+        }
+        throw new Error('EMPTY_RESPONSE');
+      }
+
       const cleaned = stripCodeFences(content);
-      const parsed = JSON.parse(cleaned);
-      return parsed;
-    } catch (parseError) {
-      console.warn(`[groq] JSON parse error (attempt ${attempts}):`, parseError.message);
+      return JSON.parse(cleaned);
+    } catch (err) {
+      console.warn(`[groq] Attempt ${attempts} error:`, err.message || err);
+
+      // Groq failed JSON validation: check if failed_generation has usable JSON or text
+      const failedGen = err?.error?.error?.failed_generation || err?.error?.failed_generation || err?.failed_generation;
+      if (typeof failedGen === 'string' && failedGen.trim()) {
+        try {
+          const match = failedGen.match(/\{[\s\S]*\}/);
+          if (match) {
+            return JSON.parse(match[0]);
+          }
+        } catch (_) {}
+
+        // For conversational responses that just weren't wrapped in JSON
+        return { reply: failedGen.trim(), pizza: null };
+      }
+
       if (attempts < 2) {
-        console.log('[groq] Retrying request with JSON parse retry...');
+        console.log('[groq] Retrying request...');
         continue;
       }
-      throw new Error('INVALID_JSON');
+      throw err;
     }
   }
 }
@@ -338,7 +352,10 @@ ${menuSummary}
 All prices are in Indian Rupees (₹).
 Custom pizza base price is ₹${menu.customBasePrice}.
 
-You must ALWAYS respond with a JSON object in this exact schema:
+CRITICAL: You must ALWAYS respond with ONLY a single valid JSON object starting with { and ending with }.
+Never output plain text outside the JSON object.
+
+Schema:
 {
   "reply": "Your friendly, concise conversational answer in clean markdown with emojis.",
   "pizza": {

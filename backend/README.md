@@ -119,7 +119,7 @@ curl -X POST http://localhost:3000/chat \
 |----------|----------|---------|-------------|
 | `GROQ_API_KEY` | ✅ | — | Your Groq API key from https://console.groq.com/ |
 | `PORT` | — | `3000` | Server port |
-| `GROQ_MODEL` | — | `llama-3.3-70b-versatile` | Groq model to use |
+| `GROQ_MODEL` | — | `qwen/qwen3.8-27b` | Groq model to use (recommended for structured output) |
 
 ## How Pricing Works
 
