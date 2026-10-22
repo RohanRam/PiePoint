@@ -189,7 +189,7 @@ fun PizzaBuilderScreen(
                         )
                         PizzaBuilderStep.REVIEW -> ReviewSelection(
                             uiState = uiState,
-                            onEdit = { viewModel.setStep(PizzaBuilderStep.CRUST) }
+                            onEditStep = { viewModel.setStep(it) }
                         )
                     }
                 }
@@ -880,7 +880,7 @@ fun SizeSelection(selected: PizzaSize, onSelect: (PizzaSize) -> Unit) {
 }
 
 @Composable
-fun ReviewSelection(uiState: PizzaBuilderUiState, onEdit: () -> Unit) {
+fun ReviewSelection(uiState: PizzaBuilderUiState, onEditStep: (PizzaBuilderStep) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -888,31 +888,44 @@ fun ReviewSelection(uiState: PizzaBuilderUiState, onEdit: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Your Perfect Pizza", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            TextButton(onClick = onEdit) {
-                Text("Edit", color = OrangeAccent, fontWeight = FontWeight.Bold)
-            }
         }
         Spacer(modifier = Modifier.height(16.dp))
         
-        ReviewItem("Crust", uiState.selectedCrust?.name ?: "None")
-        ReviewItem("Sauce", uiState.selectedSauce?.name ?: "None")
-        ReviewItem("Cheese", uiState.selectedCheese?.name ?: "None")
+        ReviewItem("Crust", uiState.selectedCrust?.name ?: "None") { onEditStep(PizzaBuilderStep.CRUST) }
+        ReviewItem("Sauce", uiState.selectedSauce?.name ?: "None") { onEditStep(PizzaBuilderStep.SAUCE) }
+        ReviewItem("Cheese", uiState.selectedCheese?.name ?: "None") { onEditStep(PizzaBuilderStep.CHEESE) }
         ReviewItem(
             "Toppings",
             if (uiState.selectedToppings.isEmpty()) "None"
             else uiState.selectedToppings.entries.joinToString { (topping, qty) ->
                 if (qty > 1) "${topping.name} x$qty" else topping.name
             }
-        )
-        ReviewItem("Size", uiState.selectedSize.label + " - " + uiState.selectedSize.inches + "\"")
+        ) { onEditStep(PizzaBuilderStep.TOPPINGS) }
+        ReviewItem("Size", uiState.selectedSize.label + " - " + uiState.selectedSize.inches + "\"") { onEditStep(PizzaBuilderStep.SIZE) }
     }
 }
 
 @Composable
-fun ReviewItem(label: String, value: String) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextHint, fontWeight = FontWeight.Bold)
-        Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+fun ReviewItem(label: String, value: String, onEdit: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextHint, fontWeight = FontWeight.Bold)
+            Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+        }
+        Text(
+            text = "Edit",
+            color = OrangeAccent,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .clickable(onClick = onEdit)
+                .padding(start = 16.dp, top = 4.dp, bottom = 4.dp)
+        )
     }
 }
 
