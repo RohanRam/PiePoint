@@ -66,9 +66,11 @@ backend/.env
 backend/.env.*
 !backend/.env.example
 
-# Scratch test files
+# Scratch test & eval files
 backend/test_*.mjs
 backend/test_*.js
+backend/eval.js
+PROJECT_FACTS.md
 
 # Android Studio captures, traces & profiler
 captures/

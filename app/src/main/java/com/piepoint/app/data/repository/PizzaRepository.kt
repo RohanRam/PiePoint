@@ -7,14 +7,17 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class PizzaRepository {
 
+    companion object {
+        private val _sharedOrders = MutableStateFlow<List<Order>>(MockDataProvider.mockOrders)
+    }
+
     private val _pizzas = MutableStateFlow(MockDataProvider.pizzas)
     val pizzas: StateFlow<List<Pizza>> = _pizzas.asStateFlow()
 
     private val _categories = MutableStateFlow(MockDataProvider.categories)
     val categories: StateFlow<List<PizzaCategory>> = _categories.asStateFlow()
 
-    private val _orders = MutableStateFlow<List<Order>>(emptyList())
-    val orders: StateFlow<List<Order>> = _orders.asStateFlow()
+    val orders: StateFlow<List<Order>> = _sharedOrders.asStateFlow()
 
     private val _user = MutableStateFlow(MockDataProvider.mockUser)
     val user: StateFlow<User> = _user.asStateFlow()
@@ -25,7 +28,7 @@ class PizzaRepository {
         MockDataProvider.pizzas.filter { it.category == categoryId }
 
     fun placeOrder(order: Order) {
-        _orders.value = listOf(order) + _orders.value
+        _sharedOrders.value = listOf(order) + _sharedOrders.value
     }
 
     fun updateUser(user: User) {

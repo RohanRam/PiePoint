@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 package com.piepoint.app
 
 import android.os.Bundle
@@ -96,7 +97,8 @@ fun PiePointApp() {
         Screen.OrderHistory.route,
         Screen.Profile.route
     )
-    val showBottomNav = currentRoute in bottomNavRoutes
+    val isImeVisible = WindowInsets.isImeVisible
+    val showBottomNav = currentRoute in bottomNavRoutes && !isImeVisible
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(

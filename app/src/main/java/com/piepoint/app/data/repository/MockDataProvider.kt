@@ -123,4 +123,55 @@ object MockDataProvider {
     )
 
     val deliveryFee = 2.99
+
+    val mockOrders = listOf(
+        Order(
+            id = "ORD-98421",
+            items = listOf(
+                CartItem(
+                    id = "item-mock-1",
+                    pizza = pizzas[0],
+                    selectedSize = PizzaSize.LARGE,
+                    selectedCrust = crusts[2],
+                    selectedToppings = listOf(toppings[1], toppings[2]),
+                    quantity = 1
+                ),
+                CartItem(
+                    id = "item-mock-2",
+                    pizza = pizzas[1],
+                    selectedSize = PizzaSize.MEDIUM,
+                    selectedCrust = crusts[0],
+                    selectedToppings = listOf(toppings[0]),
+                    quantity = 1
+                )
+            ),
+            subtotal = 38.48,
+            deliveryFee = 2.99,
+            total = 41.47,
+            status = OrderStatus.OUT_FOR_DELIVERY,
+            createdAt = System.currentTimeMillis() - 22 * 60 * 1000L,
+            deliveryAddress = "123 Main Street, New York, NY 10001",
+            customerName = "Alex Johnson"
+        ),
+        Order(
+            id = "ORD-97510",
+            items = listOf(
+                CartItem(
+                    id = "item-mock-3",
+                    pizza = pizzas[2],
+                    selectedSize = PizzaSize.MEDIUM,
+                    selectedCrust = crusts[1],
+                    selectedToppings = listOf(toppings[4]),
+                    quantity = 2
+                )
+            ),
+            subtotal = 37.98,
+            deliveryFee = 2.99,
+            total = 40.97,
+            status = OrderStatus.DELIVERED,
+            createdAt = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000L,
+            deliveryAddress = "123 Main Street, New York, NY 10001",
+            customerName = "Alex Johnson"
+        )
+    )
 }

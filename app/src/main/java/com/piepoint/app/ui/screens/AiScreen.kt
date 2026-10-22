@@ -62,10 +62,16 @@ fun AiScreen(
     var inputText by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
-    // Detect keyboard visibility
-    val density = LocalDensity.current
-    val imeBottom = WindowInsets.ime.getBottom(density)
-    val isKeyboardOpen = imeBottom > 0
+    // Detect keyboard visibility reactively with Compose State
+    val isKeyboardOpen = WindowInsets.isImeVisible
+    val bottomPadding by animateDpAsState(
+        targetValue = if (isKeyboardOpen) 0.dp else 92.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "ai_input_bottom_padding"
+    )
 
     // Cart badge count
     val cartItemCount by remember { derivedStateOf { cartViewModel.itemCount } }
@@ -168,7 +174,7 @@ fun AiScreen(
                 }
             },
             isLoading = uiState.isLoading,
-            modifier = Modifier.padding(bottom = if (isKeyboardOpen) 8.dp else 92.dp)
+            modifier = Modifier.padding(bottom = bottomPadding)
         )
     }
 }

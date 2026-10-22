@@ -1048,21 +1048,27 @@ fun ToppingCard(
                     }
                 }
 
-                // Plus button
-                Surface(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clickable(onClick = onIncrement),
-                    shape = CircleShape,
-                    color = if (isSelected) Color.White.copy(alpha = 0.25f) else Color(0xFFFFF0E6)
+                // Plus button (disappears when max limit of 3 is reached)
+                AnimatedVisibility(
+                    visible = quantity < PizzaBuilderViewModel.MAX_TOPPING_QTY,
+                    enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.5f),
+                    exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.5f)
                 ) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        Icon(
-                            Icons.Rounded.Add,
-                            contentDescription = "Increase ${topping.name}",
-                            tint = if (isSelected) Color.White else OrangeAccent,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    Surface(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clickable(onClick = onIncrement),
+                        shape = CircleShape,
+                        color = if (isSelected) Color.White.copy(alpha = 0.25f) else Color(0xFFFFF0E6)
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Rounded.Add,
+                                contentDescription = "Increase ${topping.name}",
+                                tint = if (isSelected) Color.White else OrangeAccent,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -1197,22 +1203,28 @@ fun ToppingRow(
                     }
                 }
 
-                // Plus Button
-                Surface(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable(onClick = onIncrement),
-                    shape = CircleShape,
-                    color = if (isSelected) OrangeAccent else Color(0xFFFFF0E6),
-                    border = BorderStroke(1.dp, OrangeAccent.copy(alpha = if (isSelected) 1f else 0.3f))
+                // Plus Button (disappears when max limit of 3 is reached)
+                AnimatedVisibility(
+                    visible = quantity < PizzaBuilderViewModel.MAX_TOPPING_QTY,
+                    enter = fadeIn(tween(200)) + scaleIn(initialScale = 0.5f),
+                    exit = fadeOut(tween(150)) + scaleOut(targetScale = 0.5f)
                 ) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        Icon(
-                            Icons.Rounded.Add,
-                            contentDescription = "Increase ${topping.name}",
-                            tint = if (isSelected) Color.White else OrangeAccent,
-                            modifier = Modifier.size(18.dp)
-                        )
+                    Surface(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable(onClick = onIncrement),
+                        shape = CircleShape,
+                        color = if (isSelected) OrangeAccent else Color(0xFFFFF0E6),
+                        border = BorderStroke(1.dp, OrangeAccent.copy(alpha = if (isSelected) 1f else 0.3f))
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Rounded.Add,
+                                contentDescription = "Increase ${topping.name}",
+                                tint = if (isSelected) Color.White else OrangeAccent,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
