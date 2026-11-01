@@ -25,12 +25,13 @@ Watch the high-velocity animations, interactive layer-by-layer 3D pizza builder,
 ### 🎬 PiePoint in Motion
 
 <!-- Video Thumbnail Space -->
-<a href="https://www.youtube.com/shorts/mP9pBnC0kFw">
+<a href="">
   <img src="thumbnail.PNG" alt="PiePoint Promo Video Preview" width="560" style="border-radius: 20px; box-shadow: 0 12px 36px rgba(255, 107, 53, 0.25); border: 2px solid #FFE0D3;" />
 </a>
 
 <br/>
-<p><em>Click the thumbnail above or select an option below:</em></p>
+
+[//]: # (<p><em>Click the thumbnail above or select an option below:</em></p>)
 
 <!-- Video Action Buttons -->
 <a href="./Promo-PiePoint.MOV" download>
