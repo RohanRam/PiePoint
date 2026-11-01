@@ -1,4 +1,4 @@
-# 🍕 PiePoint — Artisan Pizza Ordering Experience
+# 🍕 PiePoint — The Developer's Pizza
 
 <div align="center">
 
@@ -25,8 +25,8 @@ Watch the high-velocity animations, interactive layer-by-layer 3D pizza builder,
 ### 🎬 PiePoint in Motion
 
 <!-- Video Thumbnail Space -->
-<a href="./Promo-PiePoint.MOV">
-  <img src="PiePointLogo.png" alt="PiePoint Promo Video Preview" width="560" style="border-radius: 20px; box-shadow: 0 12px 36px rgba(255, 107, 53, 0.25); border: 2px solid #FFE0D3;" />
+<a href="https://www.youtube.com/shorts/mP9pBnC0kFw">
+  <img src="thumbnail.PNG" alt="PiePoint Promo Video Preview" width="560" style="border-radius: 20px; box-shadow: 0 12px 36px rgba(255, 107, 53, 0.25); border: 2px solid #FFE0D3;" />
 </a>
 
 <br/>
@@ -37,7 +37,7 @@ Watch the high-velocity animations, interactive layer-by-layer 3D pizza builder,
   <img src="https://img.shields.io/badge/%E2%AC%87%EF%B8%8F_Download-Promo%20Video%20(.MOV)-FF6B35?style=for-the-badge&logo=apple&logoColor=white" alt="Download Promo Video" />
 </a>
 &nbsp;&nbsp;&nbsp;&nbsp;
-<a href="https://youtu.be/YOUR_VIDEO_LINK_HERE" target="_blank" rel="noopener noreferrer">
+<a href="https://www.youtube.com/shorts/mP9pBnC0kFw" target="_blank" rel="noopener noreferrer">
   <img src="https://img.shields.io/badge/%E2%96%B6%EF%B8%8F_Watch-Video%20(YouTube%20%2F%20Web)-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Promo Video" />
 </a>
 
@@ -45,8 +45,8 @@ Watch the high-velocity animations, interactive layer-by-layer 3D pizza builder,
 
 | Action | Direct Link | Destination |
 | :--- | :--- | :--- |
-| 📥 **Download** | [Download Promo-PiePoint.MOV](./Promo-PiePoint.MOV) | Direct repository video file |
-| 🌐 **Watch** | [Watch Online / YouTube](https://youtu.be/YOUR_VIDEO_LINK_HERE) | High-definition web stream |
+| 📥 **Download** | [Download](./Promo-PiePoint.MOV) | Direct repository video file |
+| 🌐 **Watch** | [YouTube](https://www.youtube.com/shorts/mP9pBnC0kFw) | High-definition web stream |
 
 </div>
 
@@ -255,6 +255,6 @@ npm run dev
 
 <div align="center">
 
-*Crafted with ❤️ for Pizza Connoisseurs & Android Developers alike.*
+*Rohan Ram Manohar | Devnath P | Prajwal B S*
 
 </div>
